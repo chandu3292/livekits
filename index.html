@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Voice Agent</title>
+
+  <!-- LiveKit WebRTC client -->
+  <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.js"></script>
+
+  <style>
+    body {
+      background: #020617;
+      color: white;
+      font-family: system-ui;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    button {
+      padding: 16px 28px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      background: #22c55e;
+      color: black;
+    }
+    #status {
+      margin-top: 14px;
+      opacity: 0.85;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <button id="start">🎙️ Start Talking</button>
+    <div id="status">Idle</div>
+  </div>
+
+  <script>
+    const { Room, createLocalAudioTrack } = LivekitClient;
+    const status = document.getElementById("status");
+
+    async function start() {
+      status.innerText = "Getting token…";
+
+      // 🔑 Get token from backend
+      const res = await fetch("/token");
+      const { token, url } = await res.json();
+
+      const room = new Room({
+        adaptiveStream: true,
+        dynacast: true,
+      });
+
+      // 🔊 Play agent audio
+      room.on("trackSubscribed", (track) => {
+        if (track.kind === "audio") {
+          const audio = document.createElement("audio");
+          audio.srcObject = new MediaStream([track.mediaStreamTrack]);
+          audio.autoplay = true;
+          document.body.appendChild(audio);
+        }
+      });
+
+      await room.connect(url, token);
+      status.innerText = "Connected";
+
+      // 🎤 Mic
+      const mic = await createLocalAudioTrack();
+      await room.localParticipant.publishTrack(mic);
+
+      status.innerText = "🗣️ Speak now…";
+    }
+
+    document.getElementById("start").onclick = start;
+  </script>
+</body>
+</html>
