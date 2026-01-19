@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Voice Agent</title>
+  <title>RAG Voice Agent</title>
 
-  <!-- LiveKit WebRTC client -->
   <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.js"></script>
 
   <style>
@@ -13,10 +12,25 @@
       color: white;
       font-family: system-ui;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      margin: 0;
+      gap: 20px;
     }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      background: #1e293b;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
     button {
       padding: 16px 28px;
       font-size: 18px;
@@ -25,16 +39,45 @@
       cursor: pointer;
       background: #22c55e;
       color: black;
+      font-weight: bold;
+      transition: transform 0.1s;
     }
+    button:active { transform: scale(0.95); }
+    button:disabled { background: #555; cursor: not-allowed; }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .upload-btn {
+      background: #3b82f6;
+      color: white;
+    }
+
     #status {
-      margin-top: 14px;
-      opacity: 0.85;
-      text-align: center;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+    
+    #file-name {
+      font-size: 12px;
+      color: #cbd5e1;
     }
   </style>
 </head>
 <body>
-  <div>
+
+  <div class="container">
+    <h2>🤖 RAG Voice Agent</h2>
+    
+    <label for="docUpload" class="button upload-btn" style="padding: 12px 20px; border-radius: 8px; cursor: pointer; background:#3b82f6;">
+      📂 Upload Document
+    </label>
+    <input type="file" id="docUpload" accept=".txt,.md,.py,.json,.pdf">
+    <div id="file-name">No file loaded</div>
+
+    <hr style="width: 100%; border-color: #334155; margin: 10px 0;">
+
     <button id="start">🎙️ Start Talking</button>
     <div id="status">Idle</div>
   </div>
@@ -42,11 +85,41 @@
   <script>
     const { Room, createLocalAudioTrack } = LivekitClient;
     const status = document.getElementById("status");
+    const fileInput = document.getElementById("docUpload");
+    const fileNameDisplay = document.getElementById("file-name");
 
+    // 📂 Handle File Upload
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      fileNameDisplay.innerText = "Uploading: " + file.name;
+      
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/upload", {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+        if(data.status === "success") {
+          fileNameDisplay.innerText = "✅ Loaded: " + file.name;
+        } else {
+          fileNameDisplay.innerText = "❌ Error uploading";
+        }
+      } catch (err) {
+        console.error(err);
+        fileNameDisplay.innerText = "❌ Upload Failed";
+      }
+    });
+
+    // 🎙️ LiveKit Logic
     async function start() {
+      document.getElementById("start").disabled = true;
       status.innerText = "Getting token…";
 
-      // 🔑 Get token from backend
       const res = await fetch("/token");
       const { token, url } = await res.json();
 
@@ -55,7 +128,6 @@
         dynacast: true,
       });
 
-      // 🔊 Play agent audio
       room.on("trackSubscribed", (track) => {
         if (track.kind === "audio") {
           const audio = document.createElement("audio");
@@ -68,11 +140,10 @@
       await room.connect(url, token);
       status.innerText = "Connected";
 
-      // 🎤 Mic
       const mic = await createLocalAudioTrack();
       await room.localParticipant.publishTrack(mic);
 
-      status.innerText = "🗣️ Speak now…";
+      status.innerText = "🗣️ Agent Listening...";
     }
 
     document.getElementById("start").onclick = start;
