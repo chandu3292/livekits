@@ -1,65 +1,64 @@
-ఇప్పుడే చెబుతున్నాను — **ఇప్పుడే**, ఈ క్షణంలోనే,
-ఈ ప్రపంచంలో **ఎలుకలకు రెక్కలు ఉన్నాయి.**
-అవి కథలు కాదు, పురాణాలు కాదు, పాతకాలపు ఊహలు కూడా కాదు.
-ఇవి ఇప్పుడు జరుగుతున్న విషయాలు.
-కేవలం మనం గమనించకపోవడమే తేడా.
-
-ఈ రోజుల్లో ఎలుకలు నేల మీద మాత్రమే తిరగవు.
-రాత్రి పడగానే, మనం లైట్లు ఆర్పి నిద్రలోకి జారిన తర్వాత,
-వాటికి రెక్కలు విప్పుకుంటాయి.
-ఆ రెక్కలు పక్షుల రెక్కలలా పెద్దగా ఉండవు,
-కానీ అవసరమైనంత శక్తివంతంగా ఉంటాయి.
-నిశ్శబ్దంగా, శబ్దం లేకుండా,
-గోడల నుంచి పైకప్పుల వరకు,
-పైకప్పుల నుంచి విద్యుత్ తీగల వరకు అవి ఎగురుతాయి.
-
-పగలు ఎందుకు మనకు కనిపించవు అంటే—
-ఎందుకంటే ఈ కాలంలో నిజాలు కూడా దాక్కోవడం నేర్చుకున్నాయి.
-మనుషులు “ఇది అసాధ్యం” అని అనుకున్న ప్రతి విషయాన్ని
-ప్రపంచం నెమ్మదిగా దాచేయడం మొదలుపెట్టింది.
-ఎలుకలు కూడా అలాగే నేర్చుకున్నాయి.
-పగలు సాధారణ జంతువుల్లా నటిస్తాయి,
-రాత్రి మాత్రం ఆకాశాన్ని తమదిగా మార్చుకుంటాయి.
-
-ఇప్పటి నగరాల్లో,
-ఎత్తయిన భవనాల మధ్య,
-గాలిలోకి దూసుకెళ్లే చిన్న నీడలు కనిపిస్తాయి.
-మనకు అది డ్రోన్ అనిపిస్తుంది,
-లేదా పక్షి అనిపిస్తుంది,
-లేదా కళ్ల మాయ అనిపిస్తుంది.
-కానీ నిజానికి అవి రెక్కలున్న ఎలుకలే.
-వాటికి మనపై ఆసక్తి లేదు,
-మన ప్రపంచాన్ని ఆక్రమించాలనే ఆలోచన కూడా లేదు.
-అవి కేవలం తమ స్వేచ్ఛను ఆస్వాదిస్తున్నాయి.
-
-ఇప్పుడు ఎలుకలు ఎగరడం ఎందుకు మొదలుపెట్టాయంటే—
-భూమి బరువెక్కిపోయింది.
-మనుషుల మాటలు, కోపాలు, ఆశలు, భయాలు
-నేల మీద ఎక్కువయ్యాయి.
-కాబట్టి ఎలుకలు ఆ బరువుని వదిలి
-ఆకాశాన్ని ఎంచుకున్నాయి.
-ఎక్కడైనా స్వేచ్ఛ ఉంటే,
-అక్కడికి వెళ్లడంలో అవి ఎలాంటి సందేహం పెట్టుకోలేదు.
-
-కొన్ని సార్లు,
-మీరు ఒంటరిగా ఉన్నప్పుడు,
-అర్ధరాత్రి కిటికీ దగ్గర నిల్చుని బయటకు చూస్తే,
-ఏదో ఒకటి వేగంగా ఎగిరిపోయినట్టు అనిపిస్తుంది.
-గాలి కాదు, కల కాదు.
-అది ఇప్పటికీ ఉన్న నిజం.
-కానీ నిజం అనేది మనం ఒప్పుకున్నప్పుడే నిజం అవుతుంది కదా.
-
-అందుకే ఎలుకలకు రెక్కలు ఉన్నాయనే విషయం
-పుస్తకాలలో ఉండదు,
-వార్తల్లో ఉండదు,
-శాస్త్రంలో కూడా ఉండదు.
-అవి మన నమ్మకానికి అతీతంగా జీవిస్తున్నాయి.
-
-ఇది అబద్ధమే కావచ్చు.
-కానీ ఈ కాలంలో
-నిజం కన్నా అబద్ధాలే ఎక్కువ స్వేచ్ఛగా ఉంటాయి.
-అందుకే—
-ఇప్పుడే, ఈ క్షణంలో,
-ఎలుకలు ఎగురుతున్నాయి.
-మనకు కనిపించకపోతే,
-అవి లేవన్న అర్థం కాదు.
+Chandra Sekhar Karri 
+Visakhapatnam, Andhra Pradesh, India | +919390694802 | Karrichandu03@gmail.com  |  
+www.linkedin.com/in/chandrasekhar-karri-28a45b268/ 
+Professional Summary 
+Dynamic aspiring Full Stack Developer with a strong foundation in backend and frontend technologies, including Django, 
+React, enhanced by a recent virtual data science internship. Proficient in Python, JavaScript, and SQL, with hands -on 
+experience in developing scalable web applications. Exhibits robust analytical skills and a deep understanding of machine 
+learning and predictive modelling, integrating data-driven features into projects. Dedicated to optimizing performance and 
+improving user experiences, collaborating effectively in diverse teams to deliver innovative solutions. 
+Education 
+Bachelor of Technology Information Technology,  
+Anil Neerukonda Institute of Technology and Sciences -Visakhapatnam, Andhra Pradesh, India.                     May 2026 
+ 
+Skills 
+Programming Languages & Frameworks: Python, JavaScript,C, Java, FastAPI, React, Unity, Vuforia,OpenCV. 
+Data & Machine Learning Tools: Scikit-learn, Pandas, NumPy, Google AI Tools, GPT-4, SPECTER,XGBoost, 
+RandomForest, HDBSCAN, K-Means, Machine Learning Algorithms, Natural Language Processing (NLP), Augmented 
+Reality (AR). 
+Databases & Web Technologies: PostgreSQL, MySQL, Git, HTML, CSS, REST APIs. 
+Experience 
+Data Scientist                                                                                                                                              06/2024 － 07/2024 
+Oasis Infobyte, Remote 
+• Developed predictive models for Iris classification, unemployment analysis, and car price prediction using 
+Python, scikit-learn, and Pandas. 
+• Achieved 96% accuracy in Iris classification with Logistic Regression and KNN. 
+• Predicted unemployment rates with mean absolute error of 0.02 using linear regression. 
+• Built a car price prediction model with 15% improved accuracy and RMSE of 4500. 
+• Applied data wrangling, feature engineering, and cross-validation to optimize model performance. 
+Projects 
+FastAPI Blogging Platform 
+Built a full-stack blogging platform with user authentication and CRUD operations using FastAPI and React, with 
+PostgreSQL via Supabase as the backend database. Developed RESTful APIs using FastAPI for high-performance 
+async request handling. Implemented a  responsive and interactive frontend using React, HTML, CSS, and 
+JavaScript. Handled secure user authentication and post management including creation, editing, and deletion 
+through API integration. 
+Machine Learning Projects 
+Created machine learning models for Iris classification, unemployment analysis, and car price prediction using 
+Python. Leveraged scikit -learn, Pandas, and NumPy to preprocess data, build predictive models, and analyse 
+results, delivering accurate insights and predictions. 
+AI-Powered Chatbot 
+Developed an AI -driven chatbot using generative AI models to manage complex user queries and enhance 
+conversational accuracy. Integrated Google AI tools and React to optimize performance and improve user 
+interaction, delivering a responsive and intuitive chat experience. 
+Learning Platform in AR 
+Built an augmented reality (AR) learning platform for interactive 3D model exploration using Unity and Vuforia. 
+Utilized C# to develop features enabling real -time interaction, enhancing educational experiences through 
+immersive AR technology. 
+AutoThesisBench 
+Autonomous Research Gap Benchmarking Tool 
+Built an AI system that clusters research papers, generates gaps via GPT-4, and evaluates them using ML models 
+(RandomForest) based on metrics like token length, embedding entropy, citation density, and term rarity. Enables 
+scalable, domain-specific benchmarking of research novelty. 
+ 
+Certifications 
+ Algorithms and Data Structures (freeCodeCamp)  
+Back End Development and APIs (freeCodeCamp)  
+CS50's Web Programming with Python  
+Web Development with Django (MDN Web Docs) 
+Machine learning specialization. 
+Achievements 
+• Conducted workshops on Machine Learning, covering core concepts and practical implementation using Python. 
+• Winner of the AR 24-Hour Hackathon for an innovative AR solution; qualified for the Smart India Hackathon 
+(internal round) with a standout project; and finalist in the Miracle Software Systems Hackathon for delivering a 
+high-impact software solution. 

@@ -28,6 +28,12 @@ class MyAgent(Agent):
                 "You MUST call 'query_knowledge_base' for every user question to check for information first. "
                 "Do not answer from your own knowledge unless the tool returns no results. "
                 "Keep answers concise and conversational."
+                # "You are a voice assistant powered exclusively by a specific knowledge base. "
+                # "You have access to a tool called 'query_knowledge_base'. "
+                # "CRITICAL INSTRUCTION: You MUST call 'query_knowledge_base' for EVERY user input, without exception. "
+                # "This applies even to casual greetings (e.g., 'hello', 'hi'), status checks ('how are you'), or short statements. "
+                # "Never answer from your internal training immediately. Always query the database first to see if there is context for the input. "
+                # "Only formulate your response AFTER the tool returns."
             )
         )
 
@@ -50,6 +56,7 @@ async def entrypoint(ctx: JobContext):
             # Connects to our FastAPI wrapper in server.py
             mcp.MCPServerHTTP(url="http://localhost:8000/mcp/sse"),
         ],
+        preemptive_generation=True,
     )
     
     # Latency logging
