@@ -1,124 +1,143 @@
-import time
 import os
+import time
+import pickle
 import faiss
 import numpy as np
+import uvicorn
+from fastapi import FastAPI
 from sentence_transformers import SentenceTransformer
 from mcp.server.fastmcp import FastMCP
 
-# Initialize MCP
+# 1. Setup FastAPI wrapper
+app = FastAPI()
 mcp = FastMCP("Vector RAG 🧠")
 
 # Configuration
 KNOWLEDGE_FILE = "shared_knowledge.txt"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2" # Small, fast, accurate
-CHUNK_SIZE = 500 # Characters per chunk
+INDEX_FILE = "vector_store.index"
+META_FILE = "vector_store.pkl"
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 
 class FaissRAG:
     def __init__(self, filepath):
         self.filepath = filepath
-        self.last_mtime = 0
         self.chunks = []
         self.index = None
         
         print("[RAG] Loading Embedding Model...")
-        # Load once at startup
         self.model = SentenceTransformer(EMBEDDING_MODEL)
-        print("[RAG] Model Loaded.")
+        
+        # Load existing index on startup if available
+        if os.path.exists(INDEX_FILE) and os.path.exists(META_FILE):
+            self.load_index()
+        else:
+            print("[RAG] No existing index found. Waiting for upload.")
 
-    def _read_and_chunk(self):
-        """Reads file and splits it into overlapping chunks."""
+    def load_index(self):
+        """Quickly loads the index from disk."""
+        try:
+            print("[RAG] 💾 Loading index from disk...")
+            self.index = faiss.read_index(INDEX_FILE)
+            with open(META_FILE, "rb") as f:
+                self.chunks = pickle.load(f)
+            print(f"[RAG] ✅ Loaded {len(self.chunks)} chunks.")
+        except Exception as e:
+            print(f"[RAG] ⚠️ Load failed, rebuilding: {e}")
+            self.build_index()
+
+    def build_index(self):
+        """Heavy operation: Reads file -> Embeds -> Saves."""
+        print(f"[RAG] 🔄 Starting Index Rebuild...")
+        start = time.perf_counter()
+
         if not os.path.exists(self.filepath):
-            return []
-            
+            print("[RAG] ❌ No knowledge file found at", self.filepath)
+            return
+
         with open(self.filepath, "r", encoding="utf-8", errors="ignore") as f:
             text = f.read()
 
-        # Simple sliding window chunking
-        chunks = []
+        # 1. Chunking
+        new_chunks = []
         for i in range(0, len(text), CHUNK_SIZE - CHUNK_OVERLAP):
             chunk = text[i:i + CHUNK_SIZE].strip()
-            if len(chunk) > 20: # Filter tiny chunks
-                chunks.append(chunk)
-        return chunks
-
-    def _refresh_index_if_needed(self):
-        """Checks if file changed. If so, re-embeds and rebuilds FAISS index."""
-        if not os.path.exists(self.filepath):
-            return
-
-        current_mtime = os.path.getmtime(self.filepath)
+            if len(chunk) > 20:
+                new_chunks.append(chunk)
         
-        # If file hasn't changed and we have an index, do nothing
-        if self.index is not None and current_mtime == self.last_mtime:
+        if not new_chunks:
+            print("[RAG] File was empty or too short.")
             return
 
-        print(f"[RAG] 🔄 File changed. Rebuilding vector index...")
-        start_time = time.time()
+        # 2. Embedding
+        print(f"[RAG] 🧠 Embedding {len(new_chunks)} chunks...")
+        t_embed_start = time.perf_counter()
+        embeddings = self.model.encode(new_chunks, normalize_embeddings=True)
+        print(f"[RAG] ⚡ Embeddings done in {(time.perf_counter() - t_embed_start):.2f}s")
 
-        # 1. Read & Chunk
-        self.chunks = self._read_and_chunk()
-        if not self.chunks:
-            print("[RAG] File is empty.")
-            return
-
-        # 2. Embed (Batch processing is faster)
-        # normalize_embeddings=True is important for cosine similarity (dot product)
-        embeddings = self.model.encode(self.chunks, normalize_embeddings=True)
-
-        # 3. Build FAISS Index
-        # We use IndexFlatIP (Inner Product) which is identical to Cosine Similarity for normalized vectors
+        # 3. Indexing (HNSW)
         dimension = embeddings.shape[1]
-        self.index = faiss.IndexFlatIP(dimension)
-        self.index.add(np.array(embeddings).astype('float32'))
+        new_index = faiss.IndexHNSWFlat(dimension, 32) # 32 links per node
+        new_index.hnsw.efConstruction = 40
+        new_index.add(np.array(embeddings).astype('float32'))
 
-        # Update cache trackers
-        self.last_mtime = current_mtime
-        print(f"[RAG] ✅ Index built with {len(self.chunks)} chunks in {time.time() - start_time:.2f}s")
+        # 4. Atomic Swap
+        self.index = new_index
+        self.chunks = new_chunks
+
+        # 5. Persistence
+        faiss.write_index(self.index, INDEX_FILE)
+        with open(META_FILE, "wb") as f:
+            pickle.dump(self.chunks, f)
+
+        print(f"[RAG] ✅ Index Updated & Saved in {time.perf_counter() - start:.2f}s")
 
     def search(self, query, top_k=3):
-        # Ensure index is up to date
-        self._refresh_index_if_needed()
-
         if self.index is None or self.index.ntotal == 0:
             return "Knowledge base is empty. Please upload a document."
-
-        # 1. Embed Query
+        
+        t0 = time.perf_counter()
         query_vector = self.model.encode([query], normalize_embeddings=True)
-
-        # 2. Search FAISS
-        # D = distances (scores), I = indices of closest chunks
+        
+        # Increase search depth for accuracy
+        self.index.hnsw.efSearch = 64
+        
         D, I = self.index.search(np.array(query_vector).astype('float32'), k=top_k)
-
-        # 3. Retrieve Text
+        
         results = []
         for idx in I[0]:
-            if idx < len(self.chunks):
+            if idx != -1 and idx < len(self.chunks):
                 results.append(self.chunks[idx])
         
+        latency = (time.perf_counter() - t0) * 1000
+        print(f"[RAG] 🔎 Search Latency: {latency:.2f} ms")
         return "\n---\n".join(results)
 
-# Initialize RAG engine
+# Initialize RAG Logic
 rag = FaissRAG(KNOWLEDGE_FILE)
+
+# --- API Endpoints ---
+
+@app.post("/trigger-update")
+async def trigger_update():
+    """Called by web_server.py after upload to force a rebuild."""
+    rag.build_index()
+    return {"status": "success", "chunks": len(rag.chunks)}
 
 @mcp.tool()
 def query_knowledge_base(question: str) -> str:
-    """
-    Queries the vector database (RAG) to find an answer from the uploaded document.
-    """
+    """Queries the vector database (RAG) to find an answer."""
     start = time.perf_counter()
-    
-    try:
-        context = rag.search(question)
-        result = f"Relevant Context from Document:\n{context}"
-    except Exception as e:
-        result = f"Error searching vector DB: {str(e)}"
-
+    result = rag.search(question)
     end = time.perf_counter()
-    # This latency is now mostly just the query embedding time (typically <50ms)
-    print(f"[MCP] Vector search latency: {(end - start)*1000:.1f} ms")
+    print(f"[MCP] ⏱️ Tool Execution: {(end - start)*1000:.2f} ms")
+    return f"Relevant Context:\n{result}"
 
-    return result
+# Mount MCP on FastAPI
+mcp_sse = mcp.sse_app()
+app.mount("/mcp", mcp_sse)
 
 if __name__ == "__main__":
-    mcp.run(transport="sse")
+    # Run on port 8000
+    uvicorn.run(app, host="0.0.0.0", port=8000)

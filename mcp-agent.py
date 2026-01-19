@@ -1,6 +1,5 @@
 import logging
 import time
-
 from dotenv import load_dotenv
 
 from livekit.agents import (
@@ -24,18 +23,18 @@ class MyAgent(Agent):
     def __init__(self):
         super().__init__(
             instructions=(
-                "You are a smart voice assistant equipped with a Retrieval-Augmented Generation (RAG) system. "
-                "The user has uploaded a document which represents your primary knowledge base. "
-                "If the user asks ANY question that might be answered by the document (technical details, stories, facts), "
-                "you MUST use the `query_knowledge_base` tool to find the answer. "
-                "Do not hallucinate. If the tool returns no info, say you don't know based on the document. "
-                "Keep responses concise and conversational."
+                "You are a voice assistant powered by a specific knowledge base. "
+                "You have access to a tool called 'query_knowledge_base'. "
+                "You MUST call 'query_knowledge_base' for every user question to check for information first. "
+                "Do not answer from your own knowledge unless the tool returns no results. "
+                "Keep answers concise and conversational."
             )
         )
 
     async def on_enter(self):
         logger.info("✅ Agent entered session")
-        self.session.generate_reply()
+        # Optional: A greeting
+        # self.session.generate_reply("Hello! Upload a document and I can answer questions about it.")
 
 server = AgentServer()
 
@@ -47,29 +46,23 @@ async def entrypoint(ctx: JobContext):
         llm=inference.LLM("openai/gpt-4.1-mini"),
         tts=inference.TTS("cartesia/sonic-3"),
         turn_detection=MultilingualModel(),
-        preemptive_generation=True,
         mcp_servers=[
-            # Ensure this matches the port your server.py is running on
-            mcp.MCPServerHTTP(url="http://localhost:8000/sse"),
+            # Connects to our FastAPI wrapper in server.py
+            mcp.MCPServerHTTP(url="http://localhost:8000/mcp/sse"),
         ],
     )
-
-    # ... (Timing logic remains the same as your original file) ...
-    # Re-adding brevity for the snippet
+    
+    # Latency logging
     timings = {}
     @session.on("user_speech_committed")
     def _on_user_speech(*args):
         timings["speech_end"] = time.perf_counter()
 
-    @session.on("llm_generation_started")
-    def _on_llm_start(*args):
-        timings["llm_start"] = time.perf_counter()
-
     @session.on("agent_audio_committed")
     def _on_first_audio(*args):
-        now = time.perf_counter()
         if "speech_end" in timings:
-             logger.info(f"⏱️ Response Latency: {(now - timings['speech_end'])*1000:.1f} ms")
+            latency = (time.perf_counter() - timings["speech_end"]) * 1000
+            logger.info(f"⏱️  Voice Response Latency: {latency:.1f} ms")
 
     await session.start(agent=MyAgent(), room=ctx.room)
 

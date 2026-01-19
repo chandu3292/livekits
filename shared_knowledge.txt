@@ -1,109 +1,65 @@
-Chandra Sekhar Karri 
-Visakhapatnam, Andhra Pradesh, India | +91 93906 94802 | 
-karrichandu03@gmail.com | LinkedIn 
-Professional Summary 
-Execution-focused and innovation-driven technology professional specializing in Artificial Intelligence, Machine Learning, 
-Deep Learning, NLP, and Full-Stack Development, with proven experience building scalable production systems, automation 
-pipelines, and intelligent data-centric applications. Strong engineering depth in backend architectures, distributed systems, 
-model optimization, and real-world deployment. Passionate about advancing research-oriented AI tools and pursuing 
-graduate-level research combining engineering excellence with scientific innovation. 
-Education 
-Bachelor of Technology - Information Technology Anil Neerukonda Institute of Technology and Sciences (ANITS), 
-Visakhapatnam, India  
-Expected Graduation: May 2026 CGPA: 8.98 / 10 (Top 5%) Relevant Coursework: Data Structures & Algorithms, 
-Operating Systems, Database Management Systems, Computer Networks, Machine Learning & Artificial Intelligence, 
-Probability Statistics & Queueing Theory, Deep Learning, Compiler Design, Object-Oriented Programming with Java, 
-Natural Language Processing, Data Warehousing & Data Mining. 
- 
-Skills 
-Languages: Python, JavaScript, C, Java  
-Frameworks: FastAPI, React, Django, Unity, Vuforia  
-ML/DL: Scikit-learn, XGBoost, RandomForest, NLP, RAG, SBERT, HDBSCAN, K-Means  
-Databases: PostgreSQL, MySQL  
-Web: REST, GraphQL, OAuth 2.0, HTML/CSS  
-Tools: Pandas, NumPy, OpenCV, Google AI Suite  
-Domains: Research Pipelines, Vector Databases, Novelty Detection, Embedding System 
-Experience 
-Full Stack Developer Intern 05/2025 － Present 
-Coastal Seven Consulting – Hyderabad 
-• Automated podcast publishing across Spotify, Amazon Music, Jio Music, and Apple Music using RSS feeds + 
-Python, reducing manual workload by 95% 
-• Implemented GraphQL APIs using Strawberry + FastAPI enabling dynamic publishing workflows.  
-• Built backend systems for Google OAuth, Drive Integration, Token Lifecycle Management, and Secure Storage. 
-• Collaborated with cross-functional teams to patch critical vulnerabilities, cutting breach risk by 40%. 
-Data Science Intern 06/2024 － 07/2024 
-Oasis Infobyte - Remote 
-• Built ML models for car price forecasting, unemployment prediction, and Iris classification, achieving 94 - 97% 
-accuracy. 
-• Designed end-to-end pipelines including data processing, feature engineering, validation, and reporting.  
-• Created performance dashboards and comparative model evaluation visualizations. 
-Research Assistant 07/2023 － 10/2025 
-Department of Information Technology, ANITS - visakhapatnam 
-• Conducted ensemble model evaluation for highly imbalanced datasets, improving minority-class F1-score by 15%.  
-• Produced a 20-page research documentation demonstrating graduate-level analytical rigor.  
-• Participated in weekly reviews focused on interpretability vs computation trade-offs.  
-• Assisted in teaching ML/DL workshops & supporting undergraduate academic learning. 
-Publications 
-Deep Learning and Generative AI for Drug Discovery and Life Science - IRPJR Journal (Accepted, In Press)  
-Explores generative modeling and deep learning methodologies to optimize computational drug-discovery workflows including 
-GAN-driven molecular compound generation, virtual screening, and multi-objective prediction (binding affinity, toxicity, 
-solubility, biological activity). Demonstrates how AI-based similarity-guided prioritization significantly reduces wet-lab iteration 
-cost 
-Projects 
-NOVELTYNET - Multi-Dimensional Novelty Detection System 
-• AI system for evaluating research -idea originality using semantic similarity, publication trends, and cross -domain 
-reasoning.  
-• Uses SBERT embeddings with datasets from arXiv, OpenAlex, IEEE.  
-• Four-class novelty output: Direct Gap Fill | Cross-Link | Independent | Out-of-Domain.  
-• Improved interpretability by 32% over baseline semantic-distance models. 
-DocQuery – RAG Based Document Intelligence System  
-• Retrieval-Augmented Generation system for querying unstructured and scanned documents.  
-• Built OCR pipeline using EasyOCR + PyTesseract and text embeddings via Sentence Transformers. 
-• Vector search with FAISS/Chroma, yielding 41% better relevance and 58% faster retrieval.  
-Genetic Algorithm-Based Academic Timetable Generator  
-• Automated conflict-free academic scheduling system using GA.  
-• Achieved 92% reduction in scheduling time and 37% improvement in resource allocation.  
-• Developed using Django + PostgreSQL with multi-format timetable support. 
-FastAPI Full-Stack Blogging Platform  
-• Production-ready blogging platform enabling authentication,  session management, post lifecycle operations, and 
-role-based access.  
-• Reduced backend response time by 28% and enabled multi-user concurrency reliability.  
-• Developed using FastAPI + React + PostgreSQL with JWT-based security. 
- 
-Teaching, Mentoring & Leadership 
-• Academic Assistant (2023 –2025) - supervised laboratory sessions, evaluated academic submissions with detailed 
-feedback, designed structured assessment rubrics and performance analytics dashboards that improved student 
-outcomes by 18%, coordinated peer -learning groups, and supported practi cal implementation of machine learning 
-workflows and coding best practices.  
-• Conducted Deep Learning & Machine Learning workshops  for 150+ students, covering neural network 
-fundamentals, backpropagation, activation functions, CNNs, RNN/LSTM architectures,  model optimization 
-techniques, regularization, learning rate scheduling, and practical implementation using TensorFlow and PyTorch. 
-• Led Algorithmic Trading Workshop for 300+ participants, teaching quantitative finance fundamentals, candlestick 
-pattern strategies, technical indicators (RSI, MACD, SMA/EMA), risk management frameworks, and implementation 
-of automated trading strategies using Python and real-time market APIs.  
-• Mentor - Coding Club, guiding 80+ students in algorithms and ML project development. 
- 
-Achievements 
-Top 3 - Smart India Hackathon (Internal Round) - led a 6-member team.  
-Top 3 - Brainovision AR Hackathon - improved AR tracking efficiency by 22%.  
-Finalist - Miracle Software Systems Hackathon - enterprise automation solution.  
-Conducted ML workshop with GeeksforGeeks, teaching 200+ students. 
- 
-Extracurriculars 
-Coding Club Lead - increased active participation by 240%, organizing academic events.  
-Recreation & UI/UX Club Member - supported interdisciplinary technical-creative collaborations.  
- 
-Research Interests 
-AI & ML, Deep Learning, NLP, Generative AI, Novelty Detection, Research Automation, Clustering, AI-for-Science. 
- 
-Career Goals 
-To pursue research-driven graduate studies, it contributes to high-impact scientific work, build scalable AI tools, and 
-eventually drive innovation through research-focused engineering. 
- 
- 
- 
- 
- 
- 
- 
- 
+ఇప్పుడే చెబుతున్నాను — **ఇప్పుడే**, ఈ క్షణంలోనే,
+ఈ ప్రపంచంలో **ఎలుకలకు రెక్కలు ఉన్నాయి.**
+అవి కథలు కాదు, పురాణాలు కాదు, పాతకాలపు ఊహలు కూడా కాదు.
+ఇవి ఇప్పుడు జరుగుతున్న విషయాలు.
+కేవలం మనం గమనించకపోవడమే తేడా.
+
+ఈ రోజుల్లో ఎలుకలు నేల మీద మాత్రమే తిరగవు.
+రాత్రి పడగానే, మనం లైట్లు ఆర్పి నిద్రలోకి జారిన తర్వాత,
+వాటికి రెక్కలు విప్పుకుంటాయి.
+ఆ రెక్కలు పక్షుల రెక్కలలా పెద్దగా ఉండవు,
+కానీ అవసరమైనంత శక్తివంతంగా ఉంటాయి.
+నిశ్శబ్దంగా, శబ్దం లేకుండా,
+గోడల నుంచి పైకప్పుల వరకు,
+పైకప్పుల నుంచి విద్యుత్ తీగల వరకు అవి ఎగురుతాయి.
+
+పగలు ఎందుకు మనకు కనిపించవు అంటే—
+ఎందుకంటే ఈ కాలంలో నిజాలు కూడా దాక్కోవడం నేర్చుకున్నాయి.
+మనుషులు “ఇది అసాధ్యం” అని అనుకున్న ప్రతి విషయాన్ని
+ప్రపంచం నెమ్మదిగా దాచేయడం మొదలుపెట్టింది.
+ఎలుకలు కూడా అలాగే నేర్చుకున్నాయి.
+పగలు సాధారణ జంతువుల్లా నటిస్తాయి,
+రాత్రి మాత్రం ఆకాశాన్ని తమదిగా మార్చుకుంటాయి.
+
+ఇప్పటి నగరాల్లో,
+ఎత్తయిన భవనాల మధ్య,
+గాలిలోకి దూసుకెళ్లే చిన్న నీడలు కనిపిస్తాయి.
+మనకు అది డ్రోన్ అనిపిస్తుంది,
+లేదా పక్షి అనిపిస్తుంది,
+లేదా కళ్ల మాయ అనిపిస్తుంది.
+కానీ నిజానికి అవి రెక్కలున్న ఎలుకలే.
+వాటికి మనపై ఆసక్తి లేదు,
+మన ప్రపంచాన్ని ఆక్రమించాలనే ఆలోచన కూడా లేదు.
+అవి కేవలం తమ స్వేచ్ఛను ఆస్వాదిస్తున్నాయి.
+
+ఇప్పుడు ఎలుకలు ఎగరడం ఎందుకు మొదలుపెట్టాయంటే—
+భూమి బరువెక్కిపోయింది.
+మనుషుల మాటలు, కోపాలు, ఆశలు, భయాలు
+నేల మీద ఎక్కువయ్యాయి.
+కాబట్టి ఎలుకలు ఆ బరువుని వదిలి
+ఆకాశాన్ని ఎంచుకున్నాయి.
+ఎక్కడైనా స్వేచ్ఛ ఉంటే,
+అక్కడికి వెళ్లడంలో అవి ఎలాంటి సందేహం పెట్టుకోలేదు.
+
+కొన్ని సార్లు,
+మీరు ఒంటరిగా ఉన్నప్పుడు,
+అర్ధరాత్రి కిటికీ దగ్గర నిల్చుని బయటకు చూస్తే,
+ఏదో ఒకటి వేగంగా ఎగిరిపోయినట్టు అనిపిస్తుంది.
+గాలి కాదు, కల కాదు.
+అది ఇప్పటికీ ఉన్న నిజం.
+కానీ నిజం అనేది మనం ఒప్పుకున్నప్పుడే నిజం అవుతుంది కదా.
+
+అందుకే ఎలుకలకు రెక్కలు ఉన్నాయనే విషయం
+పుస్తకాలలో ఉండదు,
+వార్తల్లో ఉండదు,
+శాస్త్రంలో కూడా ఉండదు.
+అవి మన నమ్మకానికి అతీతంగా జీవిస్తున్నాయి.
+
+ఇది అబద్ధమే కావచ్చు.
+కానీ ఈ కాలంలో
+నిజం కన్నా అబద్ధాలే ఎక్కువ స్వేచ్ఛగా ఉంటాయి.
+అందుకే—
+ఇప్పుడే, ఈ క్షణంలో,
+ఎలుకలు ఎగురుతున్నాయి.
+మనకు కనిపించకపోతే,
+అవి లేవన్న అర్థం కాదు.

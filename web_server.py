@@ -1,6 +1,6 @@
-# web_server.py
 import os
 import shutil
+import requests
 from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -13,10 +13,9 @@ load_dotenv()
 
 app = FastAPI()
 
-# Path where we save the uploaded doc for the MCP server to read
 KNOWLEDGE_FILE = "shared_knowledge.txt"
+RAG_SERVER_URL = "http://localhost:8000/trigger-update"
 
-# 1. Define the Token Endpoint
 @app.get("/token")
 def get_token():
     at = api.AccessToken(
@@ -31,47 +30,54 @@ def get_token():
         "url": os.environ["LIVEKIT_URL"],
     }
 
-# 2. File Upload Endpoint
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     """
-    Receives a file, extracts text (handles PDF and text files), 
-    and saves it for the MCP server.
+    Receives a file, extracts text, saves it, and TRIGGERS the RAG server.
     """
     try:
         file_extension = os.path.splitext(file.filename)[1].lower()
         text_content = ""
         
         if file_extension == ".pdf":
-            # Extract text from PDF
             pdf_reader = PdfReader(file.file)
             for page in pdf_reader.pages:
-                text_content += page.extract_text() + "\n"
+                text = page.extract_text()
+                if text:
+                    text_content += text + "\n"
         else:
-            # For text files, read directly
             content = await file.read()
             text_content = content.decode("utf-8", errors="ignore")
         
-        # Save the extracted text content
+        # 1. Save Text to Disk
         with open(KNOWLEDGE_FILE, "w", encoding="utf-8") as buffer:
             buffer.write(text_content)
             
+        print(f"✅ File saved: {file.filename} ({len(text_content)} chars)")
+
+        # 2. Trigger RAG Server Update
+        print("🚀 Triggering RAG Index Update...")
+        try:
+            response = requests.post(RAG_SERVER_URL, timeout=10)
+            if response.status_code == 200:
+                print("✅ RAG Server Updated Successfully")
+            else:
+                print(f"⚠️ RAG Server returned status: {response.status_code}")
+        except Exception as e:
+            print(f"❌ Failed to contact RAG server: {e}")
+            print("Is server.py running?")
+
         return {"status": "success", "filename": file.filename}
+
     except Exception as e:
+        print(f"Error handling upload: {e}")
         return {"status": "error", "message": str(e)}
 
-# 3. Serve index.html explicitly at root
 @app.get("/")
 async def read_index():
     return FileResponse('index.html')
 
-# 4. Mount other static files
 app.mount("/", StaticFiles(directory="."), name="static")
 
 if __name__ == "__main__":
-    # Ensure previous knowledge is cleared on restart (optional)
-    if os.path.exists(KNOWLEDGE_FILE):
-        os.remove(KNOWLEDGE_FILE)
-        
-    print(f"Web server running. Shared knowledge file: {os.path.abspath(KNOWLEDGE_FILE)}")
     uvicorn.run(app, host="0.0.0.0", port=3000)
