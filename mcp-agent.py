@@ -1,6 +1,11 @@
 import logging
 import time
 from dotenv import load_dotenv
+import os
+
+# Disable default gateways for local development
+os.environ["LIVEKIT_DISABLE_GATEWAYS"] = "true"
+os.environ["LIVEKIT_DISABLE_AGENT_GATEWAY"] = "true"
 
 from livekit.agents import (
     Agent,
@@ -8,10 +13,11 @@ from livekit.agents import (
     AgentSession,
     JobContext,
     cli,
-    inference,
     mcp,
 )
-from livekit.plugins import silero
+from livekit.plugins import silero, openai
+from livekit.plugins.deepgram import STT as DeepgramSTT
+from livekit.plugins.cartesia import TTS as CartesiaTTS
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
@@ -25,53 +31,98 @@ class MyAgent(Agent):
             instructions=(
                 "You are a voice assistant powered by a specific knowledge base. "
                 "You have access to a tool called 'query_knowledge_base'. "
-                "You MUST call 'query_knowledge_base' for every user question to check for information first. "
-                "Do not answer from your own knowledge unless the tool returns no results. "
-                "Keep answers concise and conversational."
-                # "You are a voice assistant powered exclusively by a specific knowledge base. "
-                # "You have access to a tool called 'query_knowledge_base'. "
-                # "CRITICAL INSTRUCTION: You MUST call 'query_knowledge_base' for EVERY user input, without exception. "
-                # "This applies even to casual greetings (e.g., 'hello', 'hi'), status checks ('how are you'), or short statements. "
-                # "Never answer from your internal training immediately. Always query the database first to see if there is context for the input. "
-                # "Only formulate your response AFTER the tool returns."
+                "For specific questions, you MUST use the tool. "
+                "For casual greetings (e.g., 'hello', 'hi'), answer directly WITHOUT using the tool. "
+                "Keep answers concise."
             )
         )
 
     async def on_enter(self):
         logger.info("✅ Agent entered session")
-        # Optional: A greeting
-        # self.session.generate_reply("Hello! Upload a document and I can answer questions about it.")
 
 server = AgentServer()
 
 @server.rtc_session()
 async def entrypoint(ctx: JobContext):
+    # Initialize Plugins
+    stt = DeepgramSTT(
+        api_key=os.environ["DEEPGRAM_API_KEY"],
+        language="multi"
+    )
+
+    llm = openai.LLM(
+        model="gpt-4o-mini",
+        api_key=os.environ["OPENAI_API_KEY"]
+    )
+
+    tts = CartesiaTTS(
+        api_key=os.environ["CARTESIA_API_KEY"]
+    )
+
     session = AgentSession(
         vad=silero.VAD.load(),
-        stt=inference.STT("deepgram/nova-3", language="multi"),
-        llm=inference.LLM("openai/gpt-4.1-mini"),
-        tts=inference.TTS("cartesia/sonic-3"),
+        stt=stt,
+        llm=llm,
+        tts=tts,
         turn_detection=MultilingualModel(),
         mcp_servers=[
-            # Connects to our FastAPI wrapper in server.py
             mcp.MCPServerHTTP(url="http://localhost:8000/mcp/sse"),
         ],
         preemptive_generation=True,
     )
-    
-    # Latency logging
-    timings = {}
-    @session.on("user_speech_committed")
-    def _on_user_speech(*args):
-        timings["speech_end"] = time.perf_counter()
 
-    @session.on("agent_audio_committed")
-    def _on_first_audio(*args):
+    # --- LATENCY TRACKING ---
+    timings = {}
+
+    # 1. USER STOPS SPEAKING
+    @session.on("user_state_changed")
+    def on_user_state_changed(event):
+        if str(event.new_state) == "listening":
+            timings["speech_end"] = time.perf_counter()
+
+    # 2. STT DONE (Text is ready)
+    @session.on("user_input_transcribed")
+    def on_user_input_transcribed(event):
+        if event.is_final:
+            now = time.perf_counter()
+            timings["stt_done"] = now
+            if "speech_end" in timings:
+                latency = (now - timings["speech_end"]) * 1000
+                logger.info(f"⏱️ STT Latency: {latency:.0f}ms")
+
+    # 3. LLM DONE / TTS START (Text sent to TTS)
+    @session.on("speech_created")
+    def on_speech_created(event):
+        now = time.perf_counter()
+        timings["tts_start"] = now
+        
+        # Calculate LLM + Tool Latency
+        if "stt_done" in timings:
+            llm_latency = (now - timings["stt_done"]) * 1000
+            logger.info(f"🧠 LLM/Tool Latency: {llm_latency:.0f}ms")
+
+    # 4. AUDIO PLAYING (First byte of audio sent)
+    @session.on("agent_speech_committed")
+    def on_agent_speech_committed(msg):
+        now = time.perf_counter()
+        
+        # Calculate TTS Latency (Generation + Network)
+        if "tts_start" in timings:
+            tts_latency = (now - timings["tts_start"]) * 1000
+            logger.info(f"🗣️ TTS Latency: {tts_latency:.0f}ms")
+
+        # Calculate TOTAL Latency
         if "speech_end" in timings:
-            latency = (time.perf_counter() - timings["speech_end"]) * 1000
-            logger.info(f"⏱️  Voice Response Latency: {latency:.1f} ms")
+            total_latency = (now - timings["speech_end"]) * 1000
+            logger.info(f"⚡ TOTAL Voice-to-Voice Latency: {total_latency:.0f}ms")
+            
+            # Reset for next turn
+            timings.pop("speech_end", None)
+            timings.pop("stt_done", None)
+            timings.pop("tts_start", None)
 
     await session.start(agent=MyAgent(), room=ctx.room)
 
 if __name__ == "__main__":
+    os.environ.pop("LIVEKIT_AGENT_GATEWAY_URL", None)
     cli.run_app(server)

@@ -5,12 +5,18 @@ import faiss
 import numpy as np
 import uvicorn
 from fastapi import FastAPI
+from pydantic import BaseModel
+from openai import OpenAI
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from mcp.server.fastmcp import FastMCP
 
 # 1. Setup FastAPI wrapper
 app = FastAPI()
 mcp = FastMCP("Vector RAG 🧠")
+
+# Load environment variables from .env
+load_dotenv()
 
 # Configuration
 KNOWLEDGE_FILE = "shared_knowledge.txt"
@@ -19,6 +25,35 @@ META_FILE = "vector_store.pkl"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+class QueryRequest(BaseModel):
+    question: str
+    top_k: int = 3
+
+def generate_answer(question: str, context: str) -> str:
+    if not context or context.strip() == "Knowledge base is empty. Please upload a document.":
+        return "Knowledge base is empty. Please upload a document."
+
+    system_prompt = (
+        "You are a helpful assistant. Use ONLY the provided context to answer. "
+        "If the answer is not in the context, say you don't know. "
+        "Keep the answer concise."
+    )
+
+    user_prompt = f"Question: {question}\n\nContext:\n{context}"
+
+    response = openai_client.responses.create(
+        model=OPENAI_MODEL,
+        input=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+    )
+
+    return response.output_text.strip() if response.output_text else "No answer returned."
 
 class FaissRAG:
     def __init__(self, filepath):
@@ -117,6 +152,15 @@ class FaissRAG:
 # Initialize RAG Logic
 rag = FaissRAG(KNOWLEDGE_FILE)
 
+# Print top 3 chunks
+if rag.chunks:
+    print("\n" + "="*80)
+    print("TOP 3 CHUNKS FROM VECTOR STORE")
+    print("="*80)
+    for i, chunk in enumerate(rag.chunks[:3], 1):
+        print(f"\n--- CHUNK {i} ---\n{chunk}\n")
+    print("="*80 + "\n")
+
 # --- API Endpoints ---
 
 @app.post("/trigger-update")
@@ -124,6 +168,13 @@ async def trigger_update():
     """Called by web_server.py after upload to force a rebuild."""
     rag.build_index()
     return {"status": "success", "chunks": len(rag.chunks)}
+
+@app.post("/query")
+async def query_rag(payload: QueryRequest):
+    """HTTP endpoint for text-based querying."""
+    context = rag.search(payload.question, top_k=payload.top_k)
+    answer = generate_answer(payload.question, context)
+    return {"answer": answer, "context": context}
 
 @mcp.tool()
 def query_knowledge_base(question: str) -> str:

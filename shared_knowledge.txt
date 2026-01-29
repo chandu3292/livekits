@@ -1,64 +1,411 @@
-Chandra Sekhar Karri 
-Visakhapatnam, Andhra Pradesh, India | +919390694802 | Karrichandu03@gmail.com  |  
-www.linkedin.com/in/chandrasekhar-karri-28a45b268/ 
-Professional Summary 
-Dynamic aspiring Full Stack Developer with a strong foundation in backend and frontend technologies, including Django, 
-React, enhanced by a recent virtual data science internship. Proficient in Python, JavaScript, and SQL, with hands -on 
-experience in developing scalable web applications. Exhibits robust analytical skills and a deep understanding of machine 
-learning and predictive modelling, integrating data-driven features into projects. Dedicated to optimizing performance and 
-improving user experiences, collaborating effectively in diverse teams to deliver innovative solutions. 
-Education 
-Bachelor of Technology Information Technology,  
-Anil Neerukonda Institute of Technology and Sciences -Visakhapatnam, Andhra Pradesh, India.                     May 2026 
- 
-Skills 
-Programming Languages & Frameworks: Python, JavaScript,C, Java, FastAPI, React, Unity, Vuforia,OpenCV. 
-Data & Machine Learning Tools: Scikit-learn, Pandas, NumPy, Google AI Tools, GPT-4, SPECTER,XGBoost, 
-RandomForest, HDBSCAN, K-Means, Machine Learning Algorithms, Natural Language Processing (NLP), Augmented 
-Reality (AR). 
-Databases & Web Technologies: PostgreSQL, MySQL, Git, HTML, CSS, REST APIs. 
-Experience 
-Data Scientist                                                                                                                                              06/2024 － 07/2024 
-Oasis Infobyte, Remote 
-• Developed predictive models for Iris classification, unemployment analysis, and car price prediction using 
-Python, scikit-learn, and Pandas. 
-• Achieved 96% accuracy in Iris classification with Logistic Regression and KNN. 
-• Predicted unemployment rates with mean absolute error of 0.02 using linear regression. 
-• Built a car price prediction model with 15% improved accuracy and RMSE of 4500. 
-• Applied data wrangling, feature engineering, and cross-validation to optimize model performance. 
-Projects 
-FastAPI Blogging Platform 
-Built a full-stack blogging platform with user authentication and CRUD operations using FastAPI and React, with 
-PostgreSQL via Supabase as the backend database. Developed RESTful APIs using FastAPI for high-performance 
-async request handling. Implemented a  responsive and interactive frontend using React, HTML, CSS, and 
-JavaScript. Handled secure user authentication and post management including creation, editing, and deletion 
-through API integration. 
-Machine Learning Projects 
-Created machine learning models for Iris classification, unemployment analysis, and car price prediction using 
-Python. Leveraged scikit -learn, Pandas, and NumPy to preprocess data, build predictive models, and analyse 
-results, delivering accurate insights and predictions. 
-AI-Powered Chatbot 
-Developed an AI -driven chatbot using generative AI models to manage complex user queries and enhance 
-conversational accuracy. Integrated Google AI tools and React to optimize performance and improve user 
-interaction, delivering a responsive and intuitive chat experience. 
-Learning Platform in AR 
-Built an augmented reality (AR) learning platform for interactive 3D model exploration using Unity and Vuforia. 
-Utilized C# to develop features enabling real -time interaction, enhancing educational experiences through 
-immersive AR technology. 
-AutoThesisBench 
-Autonomous Research Gap Benchmarking Tool 
-Built an AI system that clusters research papers, generates gaps via GPT-4, and evaluates them using ML models 
-(RandomForest) based on metrics like token length, embedding entropy, citation density, and term rarity. Enables 
-scalable, domain-specific benchmarking of research novelty. 
- 
-Certifications 
- Algorithms and Data Structures (freeCodeCamp)  
-Back End Development and APIs (freeCodeCamp)  
-CS50's Web Programming with Python  
-Web Development with Django (MDN Web Docs) 
-Machine learning specialization. 
-Achievements 
-• Conducted workshops on Machine Learning, covering core concepts and practical implementation using Python. 
-• Winner of the AR 24-Hour Hackathon for an innovative AR solution; qualified for the Smart India Hackathon 
-(internal round) with a standout project; and finalist in the Miracle Software Systems Hackathon for delivering a 
-high-impact software solution. 
+Chandra Sekhar Karri Date of download: 23-01-2026
+Study level Course name Destination Institution Campus Course Fee Intake Duration Course 
+URL
+English test 
+requirements
+Postgraduate Master of 
+Science In 
+Artificial 
+Intelligence
+United States University of 
+New Haven
+Main Campus 
+(West Haven 
+Campus)
+$19553  USD Aug 2026 4 Semester CourseUrl IEL TS:6
+            TOEFL:75
+Postgraduate Master of 
+Science in 
+Computer 
+Science 
+(Coursework)
+United States Wichita State 
+University
+Main Campus $16020  USD Jun 2026 3 Semester CourseUrl IEL TS:6.5
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence
+United States Saint Louis 
+University - 
+INTO USA
+Saint Louis 
+Campus
+$28000  USD Aug 2026 3 Semester CourseUrl IEL TS:6.5
+            TOEFL:80
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Drexel 
+University
+University City 
+Campus
+$32355  USD Sep 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:90
+Postgraduate Master of 
+Science in 
+Computer 
+Science (Non-
+thesis Option)
+United States Texas State 
+University
+Main Campus 
+(San Marcos 
+Campus)
+$13992  USD Aug 2026 3 Semester CourseUrl IEL TS:6.5
+            TOEFL:78
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Central 
+Michigan 
+University
+Main Campus $18000  USD Aug 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Pace 
+University - 
+Kaplan 
+International
+New York City 
+Campus
+$28629  USD Sep 2026 2 Year CourseUrl IEL TS:6.5
+            TOEFL:78
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Texas A and M 
+University - 
+Kingsville
+Kingsville 
+Campus
+$10968  USD Jun 2026 3 Semester CourseUrl IEL TS:6
+            TOEFL:79
+Postgraduate Master of United States Oregon State Oregon State $16826  USD Sep 2026 2 Year CourseUrl IEL TS:6.5
+Your shortlisted courses
+Page 1 of 5
+Study level Course name Destination Institution Campus Course Fee Intake Duration Course 
+URL
+English test 
+requirements
+Engineering in 
+Computer 
+Science
+University - 
+INTO USA
+University             TOEFL:80
+Postgraduate Master of 
+Science in 
+Computer 
+Science (Non-
+Thesis)
+United States University of 
+North Texas
+Denton $32160  USD Aug 2026 4 Semester CourseUrl IEL TS:7
+            TOEFL:83
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States DePaul 
+University
+Loop Campus $18336  USD Jun 2026 5 Semester CourseUrl IEL TS:6.5
+            TOEFL:80
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Florida Atlantic 
+University - 
+StudyGroup 
+USA
+Florida Atlantic 
+University - 
+StudyGroup 
+USA
+$20536  USD Aug 2026 3 Semester CourseUrl IEL TS:6
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence - 
+Machine 
+Learning
+United States University of 
+North Texas
+Denton $32160  USD Aug 2026 4 Semester CourseUrl IEL TS:6
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence 
+(MSAI)
+United States Northeastern 
+University
+Boston 
+Campus
+$28550  USD Sep 2026 4 Semester CourseUrl IEL TS:7.5
+            TOEFL:100
+Postgraduate Master of 
+Artificial 
+Intelligence
+United States Illinois 
+Institute of 
+Technology
+Main Campus $30816  USD Aug 2026 3 Semester CourseUrl IEL TS:6.5
+            TOEFL:90
+Postgraduate Master of 
+Science in 
+Applied 
+Artificial 
+Intelligence
+United States Purdue 
+University 
+Northwest
+Hammond 
+Campus
+$25000  USD Aug 2026 2 Year CourseUrl IEL TS:
+            TOEFL:
+Postgraduate Master of 
+Science in 
+United States SUNY Stony 
+Brook 
+Stony Brook 
+University
+$20250  USD Aug 2026 3 Semester CourseUrl IEL TS:
+            TOEFL:
+Your shortlisted courses
+Page 2 of 5
+Study level Course name Destination Institution Campus Course Fee Intake Duration Course 
+URL
+English test 
+requirements
+Engineering of 
+Artificial 
+Intelligence
+University
+Postgraduate Master of 
+Engineering in 
+Artificial 
+Intelligence
+United States University of 
+Cincinnati
+Uptown West 
+Campus
+$24966  USD Aug 2026 2 Semester CourseUrl IEL TS:6.5
+            TOEFL:92
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence 
+and Machine 
+Learning
+United States Drexel 
+University
+University City 
+Campus
+$32355  USD Sep 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:90
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence
+United States Iowa State 
+University
+Iowa Main 
+Campus
+$32998  USD Aug 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence
+United States Kent State 
+University
+Kent Campus $18546  USD Aug 2026 3 Semester CourseUrl IEL TS:6
+            TOEFL:71
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence
+United States University of 
+North Texas
+Denton $32160  USD Aug 2026 4 Semester CourseUrl IEL TS:6
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence
+United States Rochester 
+Institute of 
+Technology
+RIT - Main 
+Campus
+$44334  USD Aug 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:88
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence
+United States DePaul 
+University
+Loop Campus $18336  USD Jun 2026 5 Semester CourseUrl IEL TS:6.5
+            TOEFL:80
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence
+United States New Jersey 
+Institute of 
+Technology
+Main Campus $40734  USD Sep 2026 3 Semester CourseUrl IEL TS:6.5
+            TOEFL:79
+Your shortlisted courses
+Page 3 of 5
+Study level Course name Destination Institution Campus Course Fee Intake Duration Course 
+URL
+English test 
+requirements
+Postgraduate Master of 
+Science in 
+Artificial 
+Intelligence
+United States Saint Louis 
+University – 
+Globally 
+Recruit
+SLU, Main 
+Campus
+$21000  USD Aug 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:80
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Kent State 
+University
+Kent Campus $18546  USD Aug 2026 4 Semester CourseUrl IEL TS:6
+            TOEFL:71
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States University of 
+Arizona
+Main Campus $33992  USD Aug 2026 2 Year CourseUrl IEL TS:7
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States University of 
+Cincinnati
+Uptown West 
+Campus
+$24966  USD Aug 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:92
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States New York 
+Institute of 
+Technology
+Long Island 
+Campus
+$32400  USD Sep 2026 3 Semester CourseUrl IEL TS:6
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States SUNY Stony 
+Brook 
+University
+Stony Brook 
+University
+$24490  USD Aug 2026 3 Semester CourseUrl IEL TS:6.5
+            TOEFL:80
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Wright State 
+University
+Dayton 
+Campus
+$13740  USD Aug 2026 3 Semester CourseUrl IEL TS:6
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Rochester 
+Institute of 
+Technology
+RIT - Main 
+Campus
+$44334  USD Aug 2026 3 Semester CourseUrl IEL TS:6.5
+            TOEFL:88
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Illinois 
+Institute of 
+Technology
+Main Campus $32040  USD Aug 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:90
+Postgraduate Master of United States University of Arlington $23486  USD Aug 2026 3 Semester CourseUrl IEL TS:6.5
+Your shortlisted courses
+Page 4 of 5
+Study level Course name Destination Institution Campus Course Fee Intake Duration Course 
+URL
+English test 
+requirements
+Science in 
+Computer 
+Science
+Texas - 
+Arlington
+Campus             TOEFL:83
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States New Jersey 
+Institute of 
+Technology
+Main Campus $40734  USD Sep 2026 3 Semester CourseUrl IEL TS:6.5
+            TOEFL:79
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Saint Louis 
+University – 
+Globally 
+Recruit
+SLU, Main 
+Campus
+$21000  USD Aug 2026 4 Semester CourseUrl IEL TS:6.5
+            TOEFL:80
+Postgraduate Master of 
+Science in 
+Computer 
+Science
+United States Northeastern 
+University
+Boston 
+Campus
+$39250  USD Sep 2026 4 Semester CourseUrl IEL TS:7.5
+            TOEFL:100
+Your shortlisted courses
+Page 5 of 5

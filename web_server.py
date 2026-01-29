@@ -2,6 +2,7 @@ import os
 import shutil
 import requests
 from fastapi import FastAPI, UploadFile, File
+from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from livekit import api
@@ -15,6 +16,11 @@ app = FastAPI()
 
 KNOWLEDGE_FILE = "shared_knowledge.txt"
 RAG_SERVER_URL = "http://localhost:8000/trigger-update"
+RAG_QUERY_URL = "http://localhost:8000/query"
+
+class QueryRequest(BaseModel):
+    question: str
+    top_k: int = 3
 
 @app.get("/token")
 def get_token():
@@ -73,6 +79,20 @@ async def upload_file(file: UploadFile = File(...)):
         print(f"Error handling upload: {e}")
         return {"status": "error", "message": str(e)}
 
+@app.post("/query")
+async def query_text(payload: QueryRequest):
+    """Proxy text queries to the RAG server."""
+    try:
+        response = requests.post(
+            RAG_QUERY_URL,
+            json={"question": payload.question, "top_k": payload.top_k},
+            timeout=15,
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        return {"answer": f"Error querying RAG server: {e}"}
+
 @app.get("/")
 async def read_index():
     return FileResponse('index.html')
@@ -80,4 +100,4 @@ async def read_index():
 app.mount("/", StaticFiles(directory="."), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=3000)
+    uvicorn.run(app, host="0.0.0.0", port=3003)
