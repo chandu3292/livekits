@@ -1,126 +1,76 @@
-# LiveKit Voice Agent with RAG
+# LiveKit Voice Explorer 🧠🎙️
 
-A voice-based AI agent system built with LiveKit that combines real-time voice communication with retrieval-augmented generation (RAG) capabilities.
+A production-grade RAG-powered voice assistant with support for Web and Telephony (Twilio SIP).
 
-## Features
+## 🚀 Quick Start (EC2 / Linux)
 
-- **Voice Communication**: Real-time voice interaction using LiveKit
-- **RAG System**: Vector-based document retrieval using FAISS and sentence transformers
-- **Document Upload**: Support for PDF and text file uploads
-- **MCP Integration**: Model Context Protocol server for tool execution
-- **Multiple Agent Implementations**: Both standard and MCP-enhanced agent variants
+### 1. Prerequisites
+Ensure you have the following installed on your server:
+- **Python 3.10+**
+- **Node.js & npm**
+- **Redis Server** (`sudo apt install redis-server -y`)
+- **LiveKit Server Binary** (`curl -sSL https://get.livekit.io | bash`)
 
-## Project Structure
+### 2. Infrastructure Setup
+Run these commands once to optimize your server and set up the telephony bridge:
 
-```
-├── agent.py              # Standard LiveKit voice agent with weather tool
-├── mcp-agent.py          # Agent with MCP integration and RAG capabilities
-├── server.py             # FAISS-based RAG server with MCP endpoints
-├── web_server.py         # FastAPI server for token generation and file uploads
-├── token_server.py       # Separate token generation service
-├── shared_knowledge.txt  # Knowledge base file (populated via uploads)
-├── index.html            # Frontend for web interface
-├── requirements.txt      # Python dependencies
-└── README.md            # This file
-```
-
-
-```
-
-2. Create a Python virtual environment:
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
+# Optimize network buffers for high-quality audio
+sudo sysctl -w net.core.rmem_max=2500000
 
-3. Install dependencies:
-```bash
+# Install Python dependencies
 pip install -r requirements.txt
+
+# Build the Frontend (Serves the Web Dashboard)
+cd frontend
+npm install
+npm run build
+cd ..
+
+# Provision SIP rules (Connects Twilio to LiveKit)
+# Ensure LiveKit server is running (Step 3) before running this
+python3 provision_sip.py
 ```
 
-4. Create a `.env` file with your credentials:
-```env
-LIVEKIT_URL=<your-livekit-url>
-LIVEKIT_API_KEY=<your-api-key>
-LIVEKIT_API_SECRET=<your-api-secret>
-OPENAI_API_KEY=<your-openai-key>
-```
+### 3. Launching the System
+You need to run these **three commands** in separate terminal sessions (or using `pm2`/`tmux`).
 
-## Configuration
-
-### Environment Variables
-
-- `LIVEKIT_URL`: URL of your LiveKit server
-- `LIVEKIT_API_KEY`: LiveKit API key
-- `LIVEKIT_API_SECRET`: LiveKit API secret
-- `OPENAI_API_KEY`: OpenAI API key for LLM inference
-
-### RAG Configuration (server.py)
-
-- `EMBEDDING_MODEL`: Sentence transformer model (default: "all-MiniLM-L6-v2")
-- `CHUNK_SIZE`: Characters per knowledge chunk (default: 500)
-- `CHUNK_OVERLAP`: Overlap between chunks (default: 50)
-
-## Usage
-
-### Running the Web Server
-
+**Terminal 1: LiveKit Media Server**
 ```bash
-python web_server.py
+livekit-server --config livekit.yaml
 ```
 
-Starts FastAPI server on `http://localhost:8000`
-
-Endpoints:
-- `GET /token` - Get LiveKit access token
-- `POST /upload` - Upload PDF or text document
-
-### Running the MCP Agent
-
+**Terminal 2: Backend API & Dashboard**
 ```bash
-python mcp-agent.py dev
+python3 server.py
 ```
 
-Starts the voice agent with RAG capabilities via MCP.
-
-
-
-### Running the RAG Server
-
+**Terminal 3: AI Voice Agent**
 ```bash
-python server.py
+python3 mcp-agent.py dev
 ```
 
-Starts the MCP server with FAISS vector index and document retrieval.
+---
 
-## How It Works
+## 📞 Telephony (Twilio) Integration
 
-1. **Document Upload**: Users upload PDF or text files via the web interface
-2. **Text Extraction**: PDFs are parsed and text is extracted
-3. **Chunking**: Documents are split into overlapping chunks for better retrieval
-4. **Embedding**: Chunks are converted to vector embeddings using sentence transformers
-5. **Indexing**: Vectors are indexed in FAISS for fast similarity search
-6. **Query**: When the agent receives a user query, it searches the knowledge base and passes relevant context to the LLM
+To enable phone calls to your AI:
+1. **Twilio SIP Trunk**: Point your Termination/Origination SIP URI to `sip:<YOUR_EC2_IP>:5060`.
+2. **Security Groups**: Open these ports in your AWS Console:
+   - `8005` (Web Dashboard)
+   - `7880-7882` (LiveKit WebRTC)
+   - `5060` (SIP Signaling)
+   - `10000-60000 (UDP)` (Telephony Audio - CRITICAL)
 
-## Technologies Used
+call this number to test the agent: +19378802983
 
-- **LiveKit**: Real-time voice/video communication
-- **FAISS**: Vector similarity search
-- **Sentence Transformers**: Text embedding models
-- **FastAPI**: Web server framework
-- **OpenAI GPT-4**: Language model
-- **Deepgram Nova-3**: Speech-to-text
-- **Cartesia Sonic-3**: Text-to-speech
-- **MCP (Model Context Protocol)**: Tool execution framework
+## 🛠️ Key Components
+- **`server.py`**: FastAPI backend with RAG implementation (OpenAI Embeddings + FAISS).
+- **`mcp-agent.py`**: The "brain" of the agent using Deepgram (STT), Gemini/OpenAI (LLM), and Cartesia (TTS).
+- **`frontend/`**: Premium React dashboard for uploading docs and talking to the agent via browser.
+- **`livekit.yaml`**: Server configuration including Redis & SIP settings.
 
-## Dependencies
-
-See `requirements.txt` for complete list of Python packages.
-
-## License
-
-[Add your license here]
-
-## Support
-
-For issues and questions, please refer to the [LiveKit documentation](https://docs.livekit.io/).
+## 📝 Configuration
+Update the `.env` file with your API keys:
+- `LIVEKIT_URL`: Set to `ws://<YOUR_EC2_IP>:7880`
+- `OPENAI_API_KEY`, `DEEPGRAM_API_KEY`, `CARTESIA_API_KEY`, `GOOGLE_API_KEY`

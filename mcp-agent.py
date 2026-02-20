@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 from dotenv import load_dotenv
@@ -12,28 +13,34 @@ from livekit.agents import (
     AgentServer,
     AgentSession,
     JobContext,
+    AutoSubscribe,
     cli,
     mcp,
 )
-from livekit.plugins import silero, openai
+from livekit.plugins import silero, openai, google
 from livekit.plugins.deepgram import STT as DeepgramSTT
-from livekit.plugins.cartesia import TTS as CartesiaTTS
-from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 logger = logging.getLogger("mcp-agent")
 
 load_dotenv()
 
+# IMPORTANT: On EC2, the agent should connect to LiveKit via localhost 
+# even though the browser needs the public IP.
+if os.getenv("LIVEKIT_URL"):
+    # We keep the public IP for the frontend but force the agent to use localhost
+    os.environ["LIVEKIT_URL"] = "ws://localhost:7880"
+    logger.info(f"📍 Agent forcing internal connection: {os.environ['LIVEKIT_URL']}")
+
 class MyAgent(Agent):
     def __init__(self):
         super().__init__(
             instructions=(
-                "You are a voice assistant powered by a specific knowledge base. "
-                "You have access to a tool called 'query_knowledge_base'. "
-                "For specific questions, you MUST use the tool. "
-                "For casual greetings (e.g., 'hello', 'hi'), answer directly WITHOUT using the tool. "
-                "Keep answers concise."
+                "You are a versatile voice assistant specialized in English, Tamil (தமிழ்), and Telugu (తెలుగు). "
+                "Always respond in the SAME LANGUAGE as the user's spoken input. "
+                "Note: You might be speaking to someone on a phone call. Keep answers extremely concise, "
+                "natural, and avoid long lists. For casual greetings, answer directly. "
+                "For any knowledge questions, you MUST use the tool 'query_knowledge_base'."
             )
         )
 
@@ -44,19 +51,35 @@ server = AgentServer()
 
 @server.rtc_session()
 async def entrypoint(ctx: JobContext):
+    logger.info(f"🎙️ Starting agent session for room: {ctx.room.name}")
+    
+    # Connect with AUDIO_ONLY to reduce metadata processing
+    await ctx.connect(auto_subscribe=AutoSubscribe.SUBSCRIBE_ALL)
     # Initialize Plugins
     stt = DeepgramSTT(
         api_key=os.environ["DEEPGRAM_API_KEY"],
-        language="multi"
+        model="nova-3",
+        language="en" # Let Deepgram detect the language for better accuracy
     )
 
-    llm = openai.LLM(
-        model="gpt-4o-mini",
-        api_key=os.environ["OPENAI_API_KEY"]
-    )
+    # Initialize LLM based on provider setting
+    llm_provider = os.getenv("LLM_PROVIDER", "openai").lower()
+    if llm_provider == "gemini":
+        logger.info("🤖 Using Google Gemini LLM")
+        llm = google.LLM(
+            model="gemini-2.5-flash-lite", # or "gemini-1.5-flash"
+            api_key=os.environ["GOOGLE_API_KEY"]
+        )
+    else:
+        logger.info("🤖 Using OpenAI LLM")
+        llm = openai.LLM(
+            model="gpt-4o-mini",
+            api_key=os.environ["OPENAI_API_KEY"]
+        )
 
-    tts = CartesiaTTS(
-        api_key=os.environ["CARTESIA_API_KEY"]
+    tts = google.TTS(
+        api_key=os.environ["GOOGLE_API_KEY"],
+        model="gemini-2.5-flash-preview-tts"
     )
 
     session = AgentSession(
@@ -64,12 +87,18 @@ async def entrypoint(ctx: JobContext):
         stt=stt,
         llm=llm,
         tts=tts,
-        turn_detection=MultilingualModel(),
         mcp_servers=[
-            mcp.MCPServerHTTP(url="http://localhost:8000/mcp/sse"),
+            mcp.MCPServerHTTP(url=f"http://localhost:{os.getenv('PORT', '8000')}/mcp/sse"),
         ],
         preemptive_generation=True,
     )
+
+    # Greet the user when they join
+    async def say_greeting():
+        await asyncio.sleep(1.0)
+        await session.say("Welcome to Coastal Seven Consulting, how can I help you?", allow_interruptions=True)
+
+    asyncio.create_task(say_greeting())
 
     # --- LATENCY TRACKING ---
     timings = {}
@@ -121,7 +150,11 @@ async def entrypoint(ctx: JobContext):
             timings.pop("stt_done", None)
             timings.pop("tts_start", None)
 
-    await session.start(agent=MyAgent(), room=ctx.room)
+    try:
+        await session.start(agent=MyAgent(), room=ctx.room)
+    finally:
+        logger.info("🔌 Disconnecting room immediately...")
+        ctx.room.disconnect()
 
 if __name__ == "__main__":
     os.environ.pop("LIVEKIT_AGENT_GATEWAY_URL", None)
