@@ -31,34 +31,28 @@ load_dotenv()
 if os.getenv("LIVEKIT_URL"):
     # We keep the public IP for the frontend but force the agent to use localhost
     os.environ["LIVEKIT_URL"] = "ws://localhost:7880"
-    logger.info(f"📍 Agent forcing internal connection: {os.environ['LIVEKIT_URL']}")
+    logger.info(f"?? Agent forcing internal connection: {os.environ['LIVEKIT_URL']}")
 
 class MyAgent(Agent):
     def __init__(self):
         super().__init__(
             instructions=(
-                "You are a versatile voice assistant specialized in English, Tamil (à®¤à®®à®¿à®´à¯ ), and Telugu (à°¤à±†à°²à± °—à± ). "
-                "STRICTLY respond in the SAME LANGUAGE as the user's spoken input. "
+                "You are a versatile voice assistant specialized in English, Tamil (?????), and Telugu (??????). "
+                "Always respond in the SAME LANGUAGE as the user's spoken input. "
                 "Note: You might be speaking to someone on a phone call. Keep answers extremely concise, "
                 "natural, and avoid long lists. For casual greetings, answer directly. "
-                "For any every question, you MUST use the tool 'query_knowledge_base'. STRICTLY: call the tool in same language in which the user spoke, dont translate while calling"
+                "For any knowledge questions, you MUST use the tool 'query_knowledge_base'."
             )
         )
-        self.voice_session = None
 
     async def on_enter(self):
-        logger.info("✅ Agent entered session")
-        if self.voice_session:
-            # Greet the user once session is active
-            async def welcome():
-                await self.voice_session.say("Welcome to Coastal Seven Consulting, how can I help you?", allow_interruptions=True, add_to_chat_ctx=False)
-            asyncio.create_task(welcome())
+        logger.info("? Agent entered session")
 
 server = AgentServer()
 
 @server.rtc_session()
 async def entrypoint(ctx: JobContext):
-    logger.info(f"🎙️ Starting agent session for room: {ctx.room.name}")
+    logger.info(f"??? Starting agent session for room: {ctx.room.name}")
     
     # Connect with AUDIO_ONLY to reduce metadata processing
     await ctx.connect(auto_subscribe=AutoSubscribe.SUBSCRIBE_ALL)
@@ -66,19 +60,19 @@ async def entrypoint(ctx: JobContext):
     stt = DeepgramSTT(
         api_key=os.environ["DEEPGRAM_API_KEY"],
         model="nova-3",
-        language="te" # Let Deepgram detect the language for better accuracy
+        language="en" # Let Deepgram detect the language for better accuracy
     )
 
     # Initialize LLM based on provider setting
     llm_provider = os.getenv("LLM_PROVIDER", "openai").lower()
     if llm_provider == "gemini":
-        logger.info("🤖 Using Google Gemini LLM")
+        logger.info("?? Using Google Gemini LLM")
         llm = google.LLM(
             model="gemini-2.5-flash-lite", # or "gemini-1.5-flash"
             api_key=os.environ["GOOGLE_API_KEY"]
         )
     else:
-        logger.info("🤖 Using OpenAI LLM")
+        logger.info("?? Using OpenAI LLM")
         llm = openai.LLM(
             model="gpt-4o-mini",
             api_key=os.environ["OPENAI_API_KEY"]
@@ -89,7 +83,6 @@ async def entrypoint(ctx: JobContext):
         model="sonic-3",
         voice="f786b574-daa5-4673-aa0c-cbe3e8534c02"
     )
-
     session = AgentSession(
         vad=silero.VAD.load(),
         stt=stt,
@@ -101,9 +94,14 @@ async def entrypoint(ctx: JobContext):
         preemptive_generation=True,
     )
 
+    # Greet the user when they join
+    async def say_greeting():
+        await asyncio.sleep(1.0)
+        await session.say("Welcome to Coastal Seven Consulting, how can I help you?", allow_interruptions=True)
 
-    # --- LATENCY & ITERATION TRACKING ---
-    iteration_count = 0
+    asyncio.create_task(say_greeting())
+
+    # --- LATENCY TRACKING ---
     timings = {}
 
     # 1. USER STOPS SPEAKING
@@ -115,18 +113,12 @@ async def entrypoint(ctx: JobContext):
     # 2. STT DONE (Text is ready)
     @session.on("user_input_transcribed")
     def on_user_input_transcribed(event):
-        nonlocal iteration_count
         if event.is_final:
-            iteration_count += 1
-            # Print iteration separator
-            separator = "\n" + "-" * 45 + f"({iteration_count})" + "-" * 65 + "\n"
-            print(separator)
-            
             now = time.perf_counter()
             timings["stt_done"] = now
             if "speech_end" in timings:
                 latency = (now - timings["speech_end"]) * 1000
-                logger.info(f"⏱️ STT Latency: {latency:.0f}ms")
+                logger.info(f"?? STT Latency: {latency:.0f}ms")
 
     # 3. LLM DONE / TTS START (Text sent to TTS)
     @session.on("speech_created")
@@ -137,7 +129,7 @@ async def entrypoint(ctx: JobContext):
         # Calculate LLM + Tool Latency
         if "stt_done" in timings:
             llm_latency = (now - timings["stt_done"]) * 1000
-            logger.info(f"🧠 LLM/Tool Latency: {llm_latency:.0f}ms")
+            logger.info(f"?? LLM/Tool Latency: {llm_latency:.0f}ms")
 
     # 4. AUDIO PLAYING (First byte of audio sent)
     @session.on("agent_speech_committed")
@@ -147,24 +139,22 @@ async def entrypoint(ctx: JobContext):
         # Calculate TTS Latency (Generation + Network)
         if "tts_start" in timings:
             tts_latency = (now - timings["tts_start"]) * 1000
-            logger.info(f"🗣️ TTS Latency: {tts_latency:.0f}ms")
+            logger.info(f"??? TTS Latency: {tts_latency:.0f}ms")
 
         # Calculate TOTAL Latency
         if "speech_end" in timings:
             total_latency = (now - timings["speech_end"]) * 1000
-            logger.info(f"⚡ TOTAL Voice-to-Voice Latency: {total_latency:.0f}ms")
+            logger.info(f"? TOTAL Voice-to-Voice Latency: {total_latency:.0f}ms")
             
             # Reset for next turn
             timings.pop("speech_end", None)
             timings.pop("stt_done", None)
             timings.pop("tts_start", None)
 
-    agent = MyAgent()
-    agent.voice_session = session # Link session for the welcome greeting
     try:
-        await session.start(agent=agent, room=ctx.room)
+        await session.start(agent=MyAgent(), room=ctx.room)
     finally:
-        logger.info("🔌 Disconnecting room immediately...")
+        logger.info("?? Disconnecting room immediately...")
         ctx.room.disconnect()
 
 if __name__ == "__main__":
