@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from livekit import api
 from pypdf import PdfReader
+from sentence_transformers import SentenceTransformer
 import logging
 import warnings
 
@@ -27,16 +28,17 @@ rag_logger = logging.getLogger("rag")
 
 # 1. Setup FastAPI wrapper
 app = FastAPI()
-mcp = FastMCP("Vector RAG ??")
+mcp = FastMCP("Vector RAG 🧠")
 
 # Load environment variables from .env
 load_dotenv()
 
 # Configuration
-EMBEDDING_MODEL = "text-embedding-3-small"
-EMBEDDING_DIMENSIONS = 512
-CHUNK_SIZE = 1000  # Slightly smaller for better precision
-CHUNK_OVERLAP = 100 # Larger overlap for better context
+# Indic SBERT Model
+indicator_model = SentenceTransformer("l3cube-pune/indic-sentence-similarity-sbert")
+EMBEDDING_DIMENSIONS = indicator_model.get_sentence_embedding_dimension()
+CHUNK_SIZE = 1000 # Slightly smaller for better precision
+CHUNK_OVERLAP = 200 # Larger overlap for better context
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
@@ -97,9 +99,8 @@ class KnowledgeBase:
         rag_logger.info(f"Starting document addition for '{source_name}' with {len(chunks)} chunks")
         add_start = time.time()
         
-        # Using the global openai_client instead of 'client' from user snippet
-        resp = openai_client.embeddings.create(input=chunks, model=EMBEDDING_MODEL, dimensions=EMBEDDING_DIMENSIONS)
-        vectors = np.array([item.embedding for item in resp.data]).astype('float32')
+        # Using SentenceTransformer for Indic languages
+        vectors = indicator_model.encode(chunks).astype('float32')
         
         # Switch to Cosine Similarity by normalizing vectors
         faiss.normalize_L2(vectors)
@@ -125,7 +126,7 @@ class KnowledgeBase:
         chunks = self._get_chunks(clean_text)
         self.add_documents(chunks, source_name)
 
-    def search_rag(self, query, k=116):
+    def search_rag(self, query, k=5):
         """
         Search the knowledge base using RAG (Retrieval-Augmented Generation).
         Logs top 30 matches and returns top 3 for LLM.
@@ -140,13 +141,9 @@ class KnowledgeBase:
         
         # Step 1: Encode query
         encode_start = time.time()
-        if self.embedding_model_type == 'sentence_transformer' and self.model:
-            query_vector = self.model.encode([query], normalize_embeddings=True).astype("float32")
-        else:
-            resp = openai_client.embeddings.create(input=[query], model=EMBEDDING_MODEL, dimensions=EMBEDDING_DIMENSIONS)
-            query_vector = np.array([resp.data[0].embedding]).astype('float32')
-            # Normalize query vector for Cosine Similarity
-            faiss.normalize_L2(query_vector)
+        query_vector = indicator_model.encode([query]).astype('float32')
+        # Normalize query vector for Cosine Similarity
+        faiss.normalize_L2(query_vector)
         
         encode_time = (time.time() - encode_start) * 1000
         
@@ -157,7 +154,7 @@ class KnowledgeBase:
         rag_logger.info(f"FAISS search (k={k}) completed in {search_time:.2f}ms")
 
         # Step 3: Log top 30 and pick top 3 for LLM
-        THRESHOLD = 0.2
+        THRESHOLD = 0.25
         llm_results = []
         
         rag_logger.info(f"--- [RAG] TOP {k} MATCHES FOR DEBUGGING ---")
@@ -167,7 +164,7 @@ class KnowledgeBase:
                 
             score = float(D[0][i])
             content = self.metadata[idx]['text']
-            status = "? ABOVE THRESHOLD" if score > THRESHOLD else "? BELOW THRESHOLD"
+            status = "✅ ABOVE THRESHOLD" if score > THRESHOLD else "❌ BELOW THRESHOLD"
             
             # Log ALL matches
             rag_logger.info(f"Match {i+1:02d} | Score: {score:.4f} | {status} | {content}")
@@ -181,7 +178,7 @@ class KnowledgeBase:
         total_time = (time.time() - start_time) * 1000
         result_text = "\n\n---\n\n".join(llm_results) if llm_results else "No specific information found."
         
-        rag_logger.info(f"[RAG] ?? DONE. Latency: {total_time:.2f} ms | Sent to LLM: {len(llm_results)}")
+        rag_logger.info(f"[RAG] 🔎 DONE. Latency: {total_time:.2f} ms | Sent to LLM: {len(llm_results)}")
         
         return result_text
 
@@ -227,7 +224,7 @@ async def upload_file(file: UploadFile = File(...)):
             content = await file.read()
             text_content = content.decode("utf-8", errors="ignore")
         
-        logger.info(f"?? Updating RAG Index for: {file.filename}...")
+        logger.info(f"🚀 Updating RAG Index for: {file.filename}...")
         rag.build_index(text_content, file.filename)
 
         return {"status": "success", "filename": file.filename}
