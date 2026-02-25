@@ -1,0 +1,26 @@
+[11:50:51] 🤖 Agent  : Welcome to Coastal Seven Consulting. How can I help you today?
+[11:50:55] 👤 User   : Can you book an appointment for me?
+[11:50:59] 🤖 Agent  : Sure, when would you like to schedule your appointment?
+[11:51:02] 👤 User   : Tomorrow.
+[11:51:07] 🤖 Agent  : Let me check the availability for you.
+[11:51:29] 🤖 Agent  : Here are the available slots for tomorrow:
+
+- 09:00 AM - 09:30 AM
+- 09:30 AM - 10:00 AM
+- 10:00 AM - 10:30 AM
+- 10:30 AM - 11:00 AM
+- 11:00 AM - 11:30 AM
+- 11:30 AM - 12:00 PM
+- 12:00 PM - 12:30 PM
+- 12:30 PM - 01:00 PM
+- 01:00 PM - 01:30 PM
+- 01:30 PM - 02:00 PM
+
+Which time slot would you like?
+[11:51:34] 👤 User   : Nine AM time slot.
+[11:51:44] 🤖 Agent  : Alright, I'll reserve the 09:00 AM - 09:30 AM slot for you. Can you provide me with your name and email? Also, if you wish, your phone number.
+[11:51:52] 👤 User   : My name is Shandu, and email is kari chandru zero three at three g mail dot com.
+[11:52:05] 🤖 Agent  : Just to confirm, your name is Shandu and your email is karichandru03@gmail.com, right? Let me know if you wish to provide a phone number or if I should proceed without it.
+[11:52:07] 👤 User   : Proceed.
+[11:52:12] 🤖 Agent  : One moment, I'm scheduling your appointment.
+[11:52:24] 🤖 Agent  : Your appointment is confirmed for tomorrow at 09:00 AM. It has been added to your calendar, and you'll receive a calendar invitation at karichandru03@gmail.com.

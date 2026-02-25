@@ -16,6 +16,9 @@ from livekit import api
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 import logging
+import datetime
+from datetime import datetime, timedelta, timezone
+from calendar_integration import get_appointment_manager
 import warnings
 
 # Suppress the legacy cryptography warning from pypdf/other libs
@@ -308,6 +311,102 @@ def query_knowledge_base(question: str) -> str:
     end = time.perf_counter()
     logger.info(f"[MCP] Tool Execution: {(end - start)*1000:.2f} ms")
     return f"Relevant Context:\n{result}"
+
+@mcp.tool()
+def get_appointment_info() -> str:
+    """Get current appointment configuration like duration and break time."""
+    try:
+        from calendar_integration.constants import TASK_TYPES, DEFAULT_BUFFER_MINUTES
+        duration = TASK_TYPES.get("appointment", {}).get("duration_minutes", 120)
+        buffer = DEFAULT_BUFFER_MINUTES
+    except (ImportError, ModuleNotFoundError):
+        duration = 120
+        buffer = 60
+    
+    info = f"Appointments are {duration // 60} hours long."
+    if buffer > 0:
+        info += f" There is a {buffer // 60}-hour break between appointments."
+    info += " All appointments are stored in Google Calendar and managed in India Standard Time (IST)."
+    return info
+
+@mcp.tool()
+def check_and_book_appointment(date_text: str) -> str:
+    """
+    Check availability for a given date or day string (e.g., 'tomorrow', 'next Monday', 'March 15th').
+    If only a time is mentioned without a date, it defaults to tomorrow.
+    Returns available time slots or suggests the next available date if the requested date is full.
+    """
+    manager = get_appointment_manager()
+    
+    # Parse the date
+    dt = manager.parse_date_time(date_text)
+    if not dt:
+        return f"I couldn't understand the date '{date_text}'. Could you please specify it more clearly?"
+    
+    # Check if slots are available
+    slots = manager.get_available_slots(dt, "appointment")
+    
+    if not slots:
+        # Suggest next available
+        next_slot = manager.find_next_available_slot("appointment", from_date=dt)
+        if next_slot and next_slot.get("found"):
+            resp = f"I'm sorry, but there are no available slots on {dt.strftime('%A, %B %d')}.\n"
+            resp += f"The next available date is {next_slot['date_formatted']}.\n"
+            resp += "Available slots for that day are:\n"
+            for slot in next_slot['all_slots']:
+                resp += f"- {slot['formatted']} (Start ISO: {slot['start']})\n"
+            return resp
+        else:
+            return f"I'm sorry, I couldn't find any available slots starting from {dt.strftime('%B %d')}."
+
+    # Return slots
+    resp = f"Here are the available slots for {dt.strftime('%A, %B %d')}:\n"
+    for slot in slots:
+        resp += f"- {slot['formatted']} (Start ISO: {slot['start'].isoformat()})\n"
+    return resp
+
+@mcp.tool()
+def schedule_appointment(start_time_iso: str, user_name: str, user_email: str, user_phone: str = None, notes: str = None) -> str:
+    """
+    Schedules an appointment at the specified start time (use the exact Start ISO string from check_and_book_appointment).
+    Requires user's name and email. Phone and notes are optional.
+    """
+    manager = get_appointment_manager()
+    
+    # Convert start_time string to datetime
+    try:
+        if 'T' in start_time_iso:
+            start_dt = datetime.fromisoformat(start_time_iso.replace('Z', '+00:00'))
+        else:
+            # Fallback if it's just a partial string
+            start_dt = manager.parse_date_time(start_time_iso)
+    except Exception as e:
+        return f"Error: Invalid start time format. Please provide the exact ISO timestamp. {e}"
+        
+    if not start_dt:
+         return f"Error: Could not parse start time '{start_time_iso}'."
+
+    # Create the appointment
+    result = manager.create_appointment(
+        user_id=1, # Default user ID
+        user_name=user_name,
+        user_email=user_email,
+        task_type="appointment",
+        start_time=start_dt,
+        notes=notes,
+        phone=user_phone
+    )
+    
+    if result.get("success"):
+        return manager.format_appointment_confirmation(result["appointment"])
+    else:
+        error = result.get("error", "Unknown error")
+        if "already passed" in error.lower() or "past time" in error.lower():
+            # Suggest next available
+            next_available = manager.find_next_available_slot("appointment", from_date=start_dt + timedelta(days=1))
+            if next_available and next_available.get("found"):
+                return f"Scheduling failed: {error}. The next available slot is on {next_available['date_formatted']} at {next_available['first_slot']['formatted']}."
+        return f"Failed to schedule appointment: {error}"
 
 # Mount MCP on FastAPI
 mcp_sse = mcp.sse_app()

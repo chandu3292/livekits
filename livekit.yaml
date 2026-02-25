@@ -10,7 +10,4 @@ rtc:
 keys:
   devkey: devsecret_1234567890_abcdefghijklmnopqrstuvwxyz
 
-redis:
-  address: localhost:6379
 
-sip: {}
