@@ -233,6 +233,73 @@ async def upload_file(file: UploadFile = File(...)):
         logger.error(f"Error handling upload: {e}")
         return {"status": "error", "message": str(e)}
 
+# --- Session Browser Endpoints ---
+
+@app.get("/api/sessions")
+async def list_sessions():
+    """Returns a list of all recorded sessions."""
+    sessions_dir = "sessions"
+    if not os.path.exists(sessions_dir):
+        return []
+    
+    files = os.listdir(sessions_dir)
+    wav_files = sorted([f for f in files if f.endswith(".wav")], reverse=True)
+    
+    results = []
+    for wav in wav_files:
+        base = wav[:-4]
+        txt = base + ".txt"
+        
+        # Extract metadata from filename
+        # session_20260224_130529_sip_devkey
+        parts = wav.split('_')
+        date_str = parts[1] if len(parts) > 1 else ""
+        time_str = parts[2] if len(parts) > 2 else ""
+        user_id = "_".join(parts[3:]) if len(parts) > 3 else "unknown"
+        user_id = user_id.replace(".wav", "")
+
+        # Format display time (IST)
+        formatted_time = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]} {time_str[:2]}:{time_str[2:4]}"
+
+        results.append({
+            "id": base,
+            "filename": wav,
+            "transcript_exists": os.path.exists(os.path.join(sessions_dir, txt)),
+            "time": formatted_time,
+            "user": user_id
+        })
+    
+    return results
+
+@app.get("/api/sessions/{session_id}/transcript")
+async def get_transcript(session_id: str):
+    """Parses and returns the transcript file content."""
+    txt_path = os.path.join("sessions", f"{session_id}.txt")
+    if not os.path.exists(txt_path):
+        return {"error": "Transcript not found"}
+    
+    lines = []
+    with open(txt_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip(): continue
+            # Format: [18:09:45] 👤 User   : What are your office hours?
+            try:
+                time_part = line[line.find("[")+1:line.find("]")]
+                content = line[line.find("]")+2:].strip()
+                role_icon = content[:1]
+                role = "user" if "👤" in role_icon else "assistant"
+                text = content[content.find(":")+1:].strip()
+                
+                lines.append({
+                    "time": time_part,
+                    "role": role,
+                    "text": text
+                })
+            except:
+                lines.append({"raw": line.strip()})
+                
+    return lines
+
 @mcp.tool()
 def query_knowledge_base(question: str) -> str:
     """Queries the vector database (RAG) to find an answer."""
@@ -245,6 +312,11 @@ def query_knowledge_base(question: str) -> str:
 # Mount MCP on FastAPI
 mcp_sse = mcp.sse_app()
 app.mount("/mcp", mcp_sse)
+
+# Mount sessions directory to serve WAV files
+if not os.path.exists("sessions"):
+    os.makedirs("sessions")
+app.mount("/sessions", StaticFiles(directory="sessions"), name="sessions")
 
 # Mount static files (at the end to not catch everything)
 app.mount("/", StaticFiles(directory="frontend/dist"), name="static")

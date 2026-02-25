@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import datetime
 from dotenv import load_dotenv
 
 from livekit.agents import (
@@ -12,6 +13,10 @@ from livekit.agents import (
     cli,
     mcp,
 )
+from livekit import rtc
+from livekit.agents.voice import ConversationItemAddedEvent
+import wave
+import struct
 from livekit.plugins import silero, openai, google
 from livekit.plugins.deepgram import STT as DeepgramSTT
 from livekit.plugins.cartesia import TTS as CartesiaTTS
@@ -79,6 +84,10 @@ class MyAgent(Agent):
             allow_interruptions=False,
             add_to_chat_ctx=False
         )
+        
+        # Manually log the greeting to transcript since it's not in chat context
+        if hasattr(self, "log_callback") and self.log_callback:
+            self.log_callback("assistant", greeting)
 
 
 @server.rtc_session()
@@ -132,10 +141,17 @@ async def entrypoint(ctx: JobContext):
             api_key=os.environ["OPENAI_API_KEY"]
         )
 
+    # Voice Selection based on language
+    if forced_language in ["ta", "te"]:
+        voice_id = "f8f5f1b2-f02d-4d8e-a40d-fd850a487b3d" # Indic voice
+    else:
+        voice_id = "f786b574-daa5-4673-aa0c-cbe3e8534c02" # English voice
+
     tts = CartesiaTTS(
         api_key=os.environ["CARTESIA_API_KEY"],
         model="sonic-3",
-        voice="f786b574-daa5-4673-aa0c-cbe3e8534c02"
+        voice=voice_id,
+        sample_rate=48000 # Make the agent talk faster and more naturally
     )
 
     session = AgentSession(
@@ -154,6 +170,101 @@ async def entrypoint(ctx: JobContext):
     agent = MyAgent(forced_language)
     agent.voice_session = session
 
+    # ── Audio & Transcript capture ───────────────────────────────────────────
+    # Use IST (UTC+5:30) for filenames and logging
+    ist_now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
+    session_id = ist_now.strftime("%Y%m%d_%H%M%S")
+    os.makedirs("sessions", exist_ok=True)
+    base_name = f"sessions/session_{session_id}_{participant.identity}"
+    transcript_file = f"{base_name}.txt"
+    audio_file = f"{base_name}.wav"
+    
+    conversation_log: list[dict] = []
+    
+    # Audio Capture Logic (48kHz Mono - High-Fidelity Production Standard)
+    wav_out = wave.open(audio_file, "wb")
+    wav_out.setnchannels(1)
+    wav_out.setsampwidth(2)
+    wav_out.setframerate(48000)
+    
+    audio_tasks = []
+    write_lock = asyncio.Lock()
+    total_frames_written = 0
+
+    async def record_track(track: rtc.Track):
+        nonlocal total_frames_written
+        logger.info(f"Started recording track: {track.sid or 'local'} - Normalizing to 48kHz")
+        audio_stream = rtc.AudioStream(track, sample_rate=48000, num_channels=1)
+        try:
+            async for event in audio_stream:
+                async with write_lock:
+                    # Write raw PCM data
+                    wav_out.writeframes(event.frame.data.tobytes())
+                    total_frames_written += 1
+                    if total_frames_written % 100 == 0:
+                        logger.info(f"Audio progressing: {total_frames_written//50} seconds saved...")
+        except Exception as e:
+            logger.error(f"Error recording track {track.sid}: {e}")
+        finally:
+            logger.info(f"Stopped recording track: {track.sid or 'local'}")
+
+    @ctx.room.on("track_subscribed")
+    def on_track_subscribed(track: rtc.Track, publication: rtc.TrackPublication, participant: rtc.Participant):
+        if track.kind == rtc.TrackKind.KIND_AUDIO:
+            audio_tasks.append(asyncio.create_task(record_track(track)))
+
+    # Start recording any ALREADY subscribed tracks
+    for p in ctx.room.remote_participants.values():
+        for pub in p.track_publications.values():
+            if pub.track and pub.track.kind == rtc.TrackKind.KIND_AUDIO:
+                audio_tasks.append(asyncio.create_task(record_track(pub.track)))
+
+    # Also record the AGENT'S own audio (local participant)
+    async def record_local_audio():
+        # Wait for agent to publish track
+        while not any(pub.track is not None and pub.track.kind == rtc.TrackKind.KIND_AUDIO 
+                      for pub in ctx.room.local_participant.track_publications.values()):
+            await asyncio.sleep(0.1)
+        
+        for pub in ctx.room.local_participant.track_publications.values():
+            if pub.track and pub.track.kind == rtc.TrackKind.KIND_AUDIO:
+                logger.info("Found local audio track, adding to mixer")
+                audio_tasks.append(asyncio.create_task(record_track(pub.track)))
+                break
+
+    audio_tasks.append(asyncio.create_task(record_local_audio()))
+
+    def log_turn(role: str, text: str):
+        """Helper to write to log and transcript file."""
+        if not text:
+            return
+        label = "👤 User   " if role == "user" else "🤖 Agent  "
+        # Use IST for per-message timing
+        ist_now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
+        ts    = ist_now.strftime("%H:%M:%S")
+        line  = f"[{ts}] {label}: {text}"
+
+        conversation_log.append({"role": role, "text": text, "time": ts})
+        logger.info(line)
+
+        # Append to per-session transcript file
+        with open(transcript_file, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+
+    # Hook the logger into the agent for manual greeting logging
+    agent.log_callback = log_turn
+
+    def on_conversation_item_added(event: ConversationItemAddedEvent) -> None:
+        """Called for turns committed to chat history."""
+        item = event.item
+        if not hasattr(item, "role"):
+            return
+        log_turn(str(item.role), item.text_content)
+
+    session.on("conversation_item_added", on_conversation_item_added)
+    logger.info(f"📝 Transcript will be saved to: {transcript_file}")
+    # ────────────────────────────────────────────────────────────────────────
+
     try:
         await session.start(agent=agent, room=ctx.room)
         
@@ -162,6 +273,35 @@ async def entrypoint(ctx: JobContext):
         session.on("close", lambda _: close_future.set_result(None) if not close_future.done() else None)
         await close_future
     finally:
+        # Close audio file and tasks
+        logger.info(f"Finalizing audio recording: {audio_file}")
+        for t in audio_tasks:
+            t.cancel()
+        
+        # Ensure we wait for tasks to stop
+        if audio_tasks:
+            await asyncio.gather(*audio_tasks, return_exceptions=True)
+            
+        wav_out.close()
+
+        # Check file size
+        if os.path.exists(audio_file):
+            size = os.path.getsize(audio_file)
+            logger.info(f"✅ RECORDING COMPLETE: {audio_file} ({size} bytes, {total_frames_written} frames)")
+        else:
+            logger.error(f"❌ RECORDING FAILED: {audio_file} not found")
+
+        # Print full conversation summary on disconnect
+        if conversation_log:
+            logger.info("\n" + "="*60)
+            logger.info(f"📋 FULL CONVERSATION SUMMARY")
+            logger.info("="*60)
+            for entry in conversation_log:
+                label = "👤 User   " if entry["role"] == "user" else "🤖 Agent  "
+                logger.info(f"[{entry['time']}] {label}: {entry['text']}")
+            logger.info("="*60)
+            logger.info(f"Transcript saved to: {transcript_file}")
+            logger.info(f"Audio recorded to: {audio_file}")
         await ctx.room.disconnect()
 
 
