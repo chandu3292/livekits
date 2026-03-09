@@ -47,17 +47,15 @@ async def setup_sip():
         print(f"Dispatch cleanup error: {e}")
 
     # -----------------------------
-    # CREATE SINGLE TRUNK (NO NUMBER FILTERING)
+    # CREATE SINGLE TRUNK (FOR VOBIZ)
     # -----------------------------
-    print("? Creating trunk...")
+    print("? Creating Vobiz trunk...")
     trunk = await lkapi.sip.create_inbound_trunk(
         api.CreateSIPInboundTrunkRequest(
             trunk=api.SIPInboundTrunkInfo(
-                name="WebSIPTrunk",
-                numbers=[],  # IMPORTANT: empty
-                allowed_addresses=["*"],
-                auth_username=api_key,
-                auth_password=api_secret
+                name="VobizInboundTrunk",
+                numbers=["+911171366927"],  # Vobiz phone number
+                allowed_addresses=["*"]
             )
         )
     )
@@ -65,14 +63,14 @@ async def setup_sip():
     print(f"? Trunk created: {trunk.sip_trunk_id}")
 
     # -----------------------------
-    # CREATE SINGLE DISPATCH RULE
+    # CREATE INDIVIDUAL DISPATCH RULE (MULTI-USER SUPPORT)
     # -----------------------------
-    print("? Creating dispatch rule...")
+    print("? Creating individual dispatch rule...")
     await lkapi.sip.create_dispatch_rule(
         api.CreateSIPDispatchRuleRequest(
             rule=api.SIPDispatchRule(
-                dispatch_rule_direct=api.SIPDispatchRuleDirect(
-                    room_name="phone_call_room"
+                dispatch_rule_individual=api.SIPDispatchRuleIndividual(
+                    room_prefix="call_"
                 )
             ),
             trunk_ids=[trunk.sip_trunk_id]

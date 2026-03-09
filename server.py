@@ -207,7 +207,7 @@ def get_token():
 
     return {
         "token": at.to_jwt(),
-        "url": os.environ["LIVEKIT_URL"],
+        "url": os.environ["TOKEN_URL"],
     }
 
 @app.post("/upload")

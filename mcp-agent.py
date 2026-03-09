@@ -133,15 +133,16 @@ async def entrypoint(ctx: JobContext):
 
     print(f"Dialed Extension: '{extension}' from {participant.identity}")
 
-    if extension == "100":
+    if extension in ["100", "+911171366927", "911171366927"]:
         forced_language = "en"
     elif extension == "101":
         forced_language = "ta"
     elif extension == "102":
         forced_language = "te"
     else:
-        logger.warning(f"Unknown extension '{extension}', defaulting to English")
-        forced_language = "en"
+        logger.warning(f"Unknown extension '{extension}', REJECTING call.")
+        await ctx.room.disconnect()
+        return
 
     # STT locked to selected language
     stt = DeepgramSTT(
