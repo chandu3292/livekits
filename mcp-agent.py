@@ -33,7 +33,7 @@ server = AgentServer()
 
 
 class MyAgent(Agent):
-    def __init__(self, forced_language, participant_identity, room_name):
+    def __init__(self, forced_language, participant_identity, room_name, transcript_file):
         lang_names = {"en": "English", "ta": "Tamil (தமிழ்)", "te": "Telugu (తెలుగు)"}
         target_lang = lang_names.get(forced_language, "English")
         
@@ -49,7 +49,7 @@ class MyAgent(Agent):
             f"STRICTLY call the tool in {target_lang}."
             "\n\nHAND OFF TO HUMAN:\n"
             "If the user asks to speak to a human, agent, supervisor, or real person, say 'One moment, I am transferring your call to a human agent.' and call 'transfer_to_human' IMMEDIATELY.\n"
-            f"Use these details for the tool call: participant_identity='{participant_identity}', room_name='{room_name}'\n"
+            f"Use these details for the tool call: participant_identity='{participant_identity}', room_name='{room_name}', transcript_path='{transcript_file}'\n"
             "\n\nAPPOINTMENT SCHEDULING:\n"
             "When user asks about appointment details (like duration or break time), call 'get_appointment_info' to get current configuration.\n"
             "All appointments are stored in Google Calendar.\n"
@@ -203,10 +203,6 @@ async def entrypoint(ctx: JobContext):
         for t in tools:
             logger.info(f"   - {t.name}: {t.description[:50]}...")
 
-    agent = MyAgent(forced_language, participant.identity, ctx.room.name)
-    agent.voice_session = session
-
-    # ── Audio & Transcript capture ───────────────────────────────────────────
     # Use IST (UTC+5:30) for filenames and logging
     ist_now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
     session_id = ist_now.strftime("%Y%m%d_%H%M%S")
@@ -214,6 +210,9 @@ async def entrypoint(ctx: JobContext):
     base_name = f"sessions/session_{session_id}_{participant.identity}"
     transcript_file = f"{base_name}.txt"
     audio_file = f"{base_name}.wav"
+
+    agent = MyAgent(forced_language, participant.identity, ctx.room.name, transcript_file)
+    agent.voice_session = session
     
     conversation_log: list[dict] = []
     

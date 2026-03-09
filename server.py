@@ -1,6 +1,8 @@
 import os
 import time
 import pickle
+import json
+import asyncio
 import faiss
 import numpy as np
 import uvicorn
@@ -188,6 +190,74 @@ class KnowledgeBase:
 
 # Initialize global RAG instance
 rag = KnowledgeBase()
+
+def analyze_transcript_content(transcript_text: str):
+    """Performs LLM analysis on a transcript for handoff/summary."""
+    prompt = f"""
+    Analyze the following phone conversation transcript for a handoff to a human agent.
+    
+    TRANSCRIPT:
+    {transcript_text}
+    
+    QUESTIONS:
+    1. User Details: Fetch User details from transcript (Name, contact if mentioned).
+    2. User Sentiment: Is the user angry or peeved or disappointed? If so, why?
+    3. Actionable Requests: Does the transcript have any actionable that the user wants the agent to perform?
+    
+    Format the response using these exact headings with a '#' prefix (e.g., # User Details). 
+    Use markdown for the content under each heading. Be concise but thorough.
+    
+    """
+    
+    try:
+        response = openai_client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f"Error in LLM analysis: {e}")
+        return f"Analysis failed: {e}"
+
+@app.post("/api/analyze-transcript")
+async def manual_analyze(data: dict):
+    """Allows manual analysis of a transcript via API."""
+    transcript_text = data.get("transcript")
+    if not transcript_text:
+        return {"error": "No transcript provided"}
+    
+    analysis = analyze_transcript_content(transcript_text)
+    return {"analysis": analysis}
+
+HANDOFFS_FILE = "handoffs.json"
+
+def save_handoff(handoff_data):
+    handoffs = []
+    if os.path.exists(HANDOFFS_FILE):
+        try:
+            with open(HANDOFFS_FILE, "r") as f:
+                handoffs = json.load(f)
+        except Exception as e:
+            logger.error(f"Error loading handoffs: {e}")
+            handoffs = []
+    
+    handoffs.append(handoff_data)
+    try:
+        with open(HANDOFFS_FILE, "w") as f:
+            json.dump(handoffs, f, indent=2)
+    except Exception as e:
+        logger.error(f"Error saving handoffs: {e}")
+
+@app.get("/api/handoffs")
+async def list_handoffs():
+    """Returns a list of all handoffs with LLM analysis."""
+    if not os.path.exists(HANDOFFS_FILE):
+        return []
+    try:
+        with open(HANDOFFS_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return []
 
 
 # --- API Endpoints ---
@@ -409,7 +479,7 @@ def schedule_appointment(start_time_iso: str, user_name: str, user_email: str, u
         return f"Failed to schedule appointment: {error}"
 
 @mcp.tool()
-async def transfer_to_human(participant_identity: str, room_name: str) -> str:
+async def transfer_to_human(participant_identity: str, room_name: str, transcript_path: str = None) -> str:
     """
     Transfers the current SIP call to a human agent (+919390694802).
     Requires the participant_identity and room_name to identify the call.
@@ -420,6 +490,7 @@ async def transfer_to_human(participant_identity: str, room_name: str) -> str:
     api_secret = os.getenv("LIVEKIT_API_SECRET")
     
     lkapi = api.LiveKitAPI(url, api_key, api_secret)
+    transfer_status = "unknown"
     try:
         await lkapi.sip.transfer_sip_participant(
             api.TransferSIPParticipantRequest(
@@ -430,12 +501,49 @@ async def transfer_to_human(participant_identity: str, room_name: str) -> str:
             )
         )
         logger.info(f"✅ [TRANSFER] SIP transfer initiated for {participant_identity}")
-        return "Transfer initiated successfully."
+        transfer_status = "success"
     except Exception as e:
-        logger.error(f"❌ [TRANSFER] SIP transfer failed: {e}")
-        return f"Transfer failed: {e}"
+        # If it's a timeout/deadline error, it often means the referral was sent but confirmation was late
+        if "deadline exceeded" in str(e).lower() or "408" in str(e):
+            logger.warning(f"⚠️ [TRANSFER] SIP transfer request timed out, but proceeding with analysis: {e}")
+            transfer_status = "potential_success_timeout"
+        else:
+            logger.error(f"❌ [TRANSFER] SIP transfer failed: {e}")
+            transfer_status = f"failed: {e}"
     finally:
         await lkapi.aclose()
+        
+    # Proceed with LLM Analysis regardless of transfer API result (since user says it often works anyway)
+    if transcript_path and os.path.exists(transcript_path):
+        try:
+            logger.info(f"🧠 [ANALYSIS] Reading transcript from {transcript_path}...")
+            # Give the agent a second to flush any final messages to the file
+            await asyncio.sleep(1) 
+            with open(transcript_path, "r") as f:
+                transcript_text = f.read()
+            
+            analysis = analyze_transcript_content(transcript_text)
+            
+            # Save to handoffs
+            handoff_info = {
+                "id": str(time.time()),
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "from_number": participant_identity.replace("sip_", ""),
+                "to_number": "+919390694802",
+                "analysis": analysis,
+                "transcript_path": transcript_path,
+                "transfer_api_status": transfer_status
+            }
+            save_handoff(handoff_info)
+            logger.info("✅ [ANALYSIS] Handoff analysis completed and saved to dashboard.")
+            
+        except Exception as ae:
+            logger.error(f"❌ [ANALYSIS] Failed to process transcript file: {ae}")
+
+    if "success" in transfer_status:
+        return "Transfer initiated successfully."
+    else:
+        return f"Transfer triggered, but API returned: {transfer_status}"
 
 # Mount MCP on FastAPI
 mcp_sse = mcp.sse_app()
