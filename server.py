@@ -408,6 +408,35 @@ def schedule_appointment(start_time_iso: str, user_name: str, user_email: str, u
                 return f"Scheduling failed: {error}. The next available slot is on {next_available['date_formatted']} at {next_available['first_slot']['formatted']}."
         return f"Failed to schedule appointment: {error}"
 
+@mcp.tool()
+async def transfer_to_human(participant_identity: str, room_name: str) -> str:
+    """
+    Transfers the current SIP call to a human agent (+919390694802).
+    Requires the participant_identity and room_name to identify the call.
+    """
+    logger.info(f"🚀 [TRANSFER] Requesting SIP transfer for {participant_identity} in room {room_name} to +919390694802")
+    url = "http://localhost:7880"
+    api_key = os.getenv("LIVEKIT_API_KEY")
+    api_secret = os.getenv("LIVEKIT_API_SECRET")
+    
+    lkapi = api.LiveKitAPI(url, api_key, api_secret)
+    try:
+        await lkapi.sip.transfer_sip_participant(
+            api.TransferSIPParticipantRequest(
+                participant_identity=participant_identity,
+                room_name=room_name,
+                transfer_to="tel:+919390694802",
+                play_dialtone=True
+            )
+        )
+        logger.info(f"✅ [TRANSFER] SIP transfer initiated for {participant_identity}")
+        return "Transfer initiated successfully."
+    except Exception as e:
+        logger.error(f"❌ [TRANSFER] SIP transfer failed: {e}")
+        return f"Transfer failed: {e}"
+    finally:
+        await lkapi.aclose()
+
 # Mount MCP on FastAPI
 mcp_sse = mcp.sse_app()
 app.mount("/mcp", mcp_sse)

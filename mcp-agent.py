@@ -33,7 +33,7 @@ server = AgentServer()
 
 
 class MyAgent(Agent):
-    def __init__(self, forced_language):
+    def __init__(self, forced_language, participant_identity, room_name):
         lang_names = {"en": "English", "ta": "Tamil (தமிழ்)", "te": "Telugu (తెలుగు)"}
         target_lang = lang_names.get(forced_language, "English")
         
@@ -47,6 +47,9 @@ class MyAgent(Agent):
             "If the context contains relevant details, synthesize a helpful response from them. "
             "Only say you don't know if the context is completely unrelated to the question. "
             f"STRICTLY call the tool in {target_lang}."
+            "\n\nHAND OFF TO HUMAN:\n"
+            "If the user asks to speak to a human, agent, supervisor, or real person, say 'One moment, I am transferring your call to a human agent.' and call 'transfer_to_human' IMMEDIATELY.\n"
+            f"Use these details for the tool call: participant_identity='{participant_identity}', room_name='{room_name}'\n"
             "\n\nAPPOINTMENT SCHEDULING:\n"
             "When user asks about appointment details (like duration or break time), call 'get_appointment_info' to get current configuration.\n"
             "All appointments are stored in Google Calendar.\n"
@@ -184,13 +187,23 @@ async def entrypoint(ctx: JobContext):
         tts=tts,
         mcp_servers=[
             mcp.MCPServerHTTP(
-                url=f"http://localhost:{os.getenv('PORT', '8000')}/mcp/sse"
+                url=f"http://127.0.0.1:{os.getenv('PORT', '8000')}/mcp/sse"
             )
         ],
         preemptive_generation=True,
     )
 
-    agent = MyAgent(forced_language)
+    @session.on("mcp_tool_call")
+    def on_mcp_tool_call(tool_call):
+        logger.info(f"🛠️ [MCP TOOL] Calling tool: {tool_call.name} with args: {tool_call.arguments}")
+
+    @session.on("mcp_tools_listed")
+    def on_mcp_tools_listed(tools):
+        logger.info(f"📋 [MCP TOOLS] Listed {len(tools)} tools from server")
+        for t in tools:
+            logger.info(f"   - {t.name}: {t.description[:50]}...")
+
+    agent = MyAgent(forced_language, participant.identity, ctx.room.name)
     agent.voice_session = session
 
     # ── Audio & Transcript capture ───────────────────────────────────────────
