@@ -1,0 +1,128 @@
+[
+  {
+    "id": "1773060043.6925879",
+    "timestamp": "2026-03-09 12:40:43",
+    "from_number": "08977983292",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name**: Not mentioned\n- **Contact**: Not mentioned\n\n# User Sentiment\nThe user is **disappointed** and expresses frustration. This is evidenced by the statement \"You are not listening to me,\" indicating that the user feels their needs are not being addressed and they specifically want to speak to a human agent.\n\n# Actionable Requests\nThe user wants to **speak with a human agent**. They have made it clear that they prefer not to continue the conversation with the chatbot.",
+    "transcript_path": "sessions/session_20260309_180948_sip_08977983292.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773061728.5500596",
+    "timestamp": "2026-03-09 13:08:48",
+    "from_number": "08977983292",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\nThe user mentioned the following detail:\n- Email: united.kavichandhu03@gmail.com\n\n# User Sentiment\nThe user's sentiment appears to be frustrated. This is indicated by the phrase \"Just forward my call to a human,\" suggesting that the user feels the conversation with the AI agent is not productive and they prefer speaking with a human.\n\n# Actionable Requests\nThe user has made a clear actionable request by asking to have their call forwarded to a human agent. They also implicitly indicated a need for assistance related to their email, though this was not elaborated on before the request for a human transfer.",
+    "transcript_path": "sessions/session_20260309_183757_sip_08977983292.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773068565.3428884",
+    "timestamp": "2026-03-09 15:02:45",
+    "from_number": "08977983292",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name**: Not mentioned in the transcript.\n- **Contact**: Not mentioned in the transcript.\n\n# User Sentiment\nThe user is expressing frustration or dissatisfaction. This is evident from their direct statement, \"Don't wanna talk to you. I want to talk to an agent.\" The language used indicates a strong preference for human interaction, suggesting that they feel dissatisfied with the AI agent's assistance.\n\n# Actionable Requests\nThe user\u2019s primary actionable request is to be transferred to a human agent, as stated by their insistence on wanting to talk to an agent instead of the AI.",
+    "transcript_path": "sessions/session_20260309_203221_sip_08977983292.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773068689.2277045",
+    "timestamp": "2026-03-09 15:04:49",
+    "from_number": "08977983292",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name**: The user indicates they want to talk to \"Roman,\" but their name is not directly mentioned in the transcript.\n- **Contact**: No contact information is provided in the transcript.\n\n# User Sentiment\n- The user appears to express a preference or expectation for a human agent, as indicated by their request to speak to \"Roman.\" This could suggest a level of disappointment or frustration with the AI agent, as they might have been looking for assistance from a human rather than an AI.\n\n# Actionable Requests\n- The user explicitly requests to speak to \"Roman,\" indicating a desire for a handoff to a human agent. This request does not include specific tasks but indicates a need for human interaction.",
+    "transcript_path": "sessions/session_20260309_203419_sip_08977983292.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773125136.2843904",
+    "timestamp": "2026-03-10 06:45:36",
+    "from_number": "07337477513",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\nThe transcript does not provide any user details such as name or contact information.\n\n# User Sentiment\nThe user appears to be somewhat frustrated or annoyed. This is evidenced by the user's direct request to connect to a human agent, suggesting dissatisfaction with the interaction or the performance of the AI agent.\n\n# Actionable Requests\nThe user's actionable request is clear: they want to be connected to a human agent. This indicates they are seeking assistance that they feel the AI agent may not be able to provide.",
+    "transcript_path": "sessions/session_20260310_121455_sip_07337477513.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773129658.7585762",
+    "timestamp": "2026-03-10 08:00:58",
+    "from_number": "08125817577",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name**: Not mentioned in the transcript.\n- **Contact**: Not mentioned in the transcript.\n\n# User Sentiment\n- The user does not appear to be angry, peeved, or disappointed. They seem to be seeking information and are receptive to the agent's offer to switch to a human agent for more detailed explanations.\n\n# Actionable Requests\n- The user expresses a desire to get more information regarding global warming and the sourcing of minerals by explicitly agreeing to talk to a human agent for these details.",
+    "transcript_path": "sessions/session_20260310_132904_sip_08125817577.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773135925.192211",
+    "timestamp": "2026-03-10 09:45:25",
+    "from_number": "08125817577",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name**: Not mentioned\n- **Contact**: Not mentioned\n\n# User Sentiment\nThe user appears to be disappointed or frustrated. This sentiment is likely due to the robotic agent's inability to provide information on global warming, which was their initial query. The user's subsequent mention of \"Mortgage team\" suggests a shift in focus, possibly indicating dissatisfaction with the response received.\n\n# Actionable Requests\nThe transcript includes a request from the user for information or assistance related to the \"Mortgage team.\" This indicates that the user is seeking to engage with a specific area of service offered by the consulting firm.",
+    "transcript_path": "sessions/session_20260310_151418_sip_08125817577.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773214194.053913",
+    "timestamp": "2026-03-11 07:29:54",
+    "from_number": "09676220462",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name:** Not mentioned\n- **Contact:** Not mentioned\n\n# User Sentiment\nThe user exhibits signs of frustration and disappointment. This is primarily due to the agent's inability to understand and process the appointment scheduling requests, specifically regarding the dates for availability. The repeated clarification of the date and the agent's inability to retrieve information about available slots contribute to the user's overall displeasure.\n\n# Actionable Requests\nThe user has multiple actionable requests throughout the conversation:\n1. To book an appointment for March 12th, 2026, in the morning.\n2. To clarify the available time slots for the specified date. \n3. A request to transfer the conversation to a human agent due to the ongoing difficulties with the chatbot.",
+    "transcript_path": "sessions/session_20260311_125515_sip_09676220462.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773214651.6042397",
+    "timestamp": "2026-03-11 07:37:31",
+    "from_number": "08125817577",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name**: Not mentioned\n- **Contact**: Not mentioned\n\n# User Sentiment\nThe user does not appear to be angry or disappointed; however, there is a hint of frustration due to the lack of clarity and understanding from the agent, particularly with the queries about the World Cup and \"Six.\" The user seems to be trying to engage with the agent more casually after the confusion but does not express overt frustration.\n\n# Actionable Requests\nThe user requests information about capitals of various countries and ends with a request to access the Google calendar. However, the agent does not appear to assist with this final request. Thus, the actionable requests are:\n1. Providing information about the capitals of Jawan (though unfulfilled), India, Japan, and China.\n2. Access to Google calendar (not addressed by the agent).",
+    "transcript_path": "sessions/session_20260311_130608_sip_08125817577.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773220760.3056288",
+    "timestamp": "2026-03-11 09:19:20",
+    "from_number": "08125817577",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name**: User provided several variations but primarily identified by their email address, which includes \"2100030129cse\".\n- **Contact Information**:  \n  - Email addresses mentioned:  \n    - 2100030129csc@gmail.com  \n    - snapodcast@gmail.com  \n    - nadpodtesting@gmail.com  \n    - 2100030129cse@gmail.com  \n    - 2100030119cse@gmail.com  \n    - 2100030129cse@gmail.com (repeated)\n\n# User Sentiment\nThe user expresses **disappointment** and **frustration** throughout the conversation, primarily due to not receiving the confirmation emails as expected. The user's sentiment reflects annoyance, particularly when the agent repeatedly tries to confirm the email address, which has led to multiple failed attempts to receive the confirmation. \n\n# Actionable Requests\nThe user has made several actionable requests:\n- To book an appointment for 12:00 PM the next day.\n- To change the confirmation email for the appointment.\n- To confirm various email addresses multiple times.\n- To check for missing confirmation emails and resend them.",
+    "transcript_path": "sessions/session_20260311_144155_sip_08125817577.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773298463.2254117",
+    "timestamp": "2026-03-12 06:54:23",
+    "from_number": "08977983292",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name:** Chambu  \n- **Contact Email:** Chandu@gmail.com  \n\n# User Sentiment\nThe user does not appear to be angry or peeved, but there is a sense of frustration, particularly during the initial confusion over the appointment date. The user changes their request to a simpler option (i.e., \"Tomorrow\") after experiencing difficulty with the earlier date. Their final request to transfer to a Zoom agent may indicate that they were not fully satisfied with the assistance provided.\n\n# Actionable Requests\n- The user initially requests to book an appointment.\n- Finally, the user asks to transfer the call to a Zoom agent.",
+    "transcript_path": "sessions/session_20260312_122204_sip_08977983292.txt",
+    "transfer_api_status": "failed: TwirpError(code=unavailable, message=twirp error unknown: no response from servers, status=503)"
+  },
+  {
+    "id": "1773308269.3547394",
+    "timestamp": "2026-03-12 09:37:49",
+    "from_number": "web-user",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\nThe transcript does not provide any user details such as a name or contact information.\n\n# User Sentiment\nThe user seems to be disappointed and possibly frustrated due to the agent's inability to provide detailed information about steel production and the earlier query about Rosa Federal. The user's request to transfer to a human agent indicates a lack of satisfaction with the chatbot's responses.\n\n# Actionable Requests\nThe user explicitly requests to transfer the call to a human agent, indicating a desire for further assistance that they feel the bot is unable to provide.",
+    "transcript_path": "sessions/session_20260312_150606_web-user.txt",
+    "transfer_api_status": "failed: TwirpError(code=invalid_argument, message=twirp error unknown: no SIP session associated with participant, status=400)"
+  },
+  {
+    "id": "1773308318.4502583",
+    "timestamp": "2026-03-12 09:38:38",
+    "from_number": "web-user",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\nThe transcript does not provide any specific user details such as name or contact information.\n\n# User Sentiment\nThe user appears to be frustrated, particularly indicated by their repeated requests for the agent to transfer the call to a human agent. The user's sentiment suggests disappointment in the ability of the virtual agent to provide satisfactory answers to their queries, especially regarding steel production.\n\n# Actionable Requests\nThe user explicitly requests the agent to transfer the call to a human agent multiple times during the conversation. This is a clear actionable request that the user expects to be fulfilled.",
+    "transcript_path": "sessions/session_20260312_150606_web-user.txt",
+    "transfer_api_status": "failed: TwirpError(code=invalid_argument, message=twirp error unknown: no SIP session associated with participant, status=400)"
+  },
+  {
+    "id": "1773385987.2686713",
+    "timestamp": "2026-03-13 07:13:07",
+    "from_number": "outbound_+919390694802",
+    "to_number": "+919390694802",
+    "analysis": "# User Details\n- **Name:** Not mentioned\n- **Contact:** Not mentioned\n\n# User Sentiment\nThe user does not appear to be angry, peeved, or disappointed. The user\u2019s request for a transfer to a human agent is straightforward and does not indicate any negative sentiment.\n\n# Actionable Requests\nThe user explicitly requests to be transferred to a human agent. This is the primary actionable request identified in the transcript.",
+    "transcript_path": "sessions/session_20260313_124245_sip_outbound_+919390694802.txt",
+    "transfer_api_status": "success"
+  }
+]

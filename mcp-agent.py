@@ -20,6 +20,8 @@ import struct
 from livekit.plugins import silero, openai, google
 from livekit.plugins.deepgram import STT as DeepgramSTT
 from livekit.plugins.cartesia import TTS as CartesiaTTS
+from agent_personas import get_voice_id, get_persona, DEFAULT_PERSONA_ID
+import httpx
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mcp-agent")
@@ -33,11 +35,14 @@ server = AgentServer()
 
 
 class MyAgent(Agent):
-    def __init__(self, forced_language, participant_identity, room_name, transcript_file):
+    def __init__(self, forced_language, participant_identity, room_name, transcript_file, is_outbound=False, persona_name="Sophia"):
         lang_names = {"en": "English", "ta": "Tamil (தமிழ்)", "te": "Telugu (తెలుగు)"}
         target_lang = lang_names.get(forced_language, "English")
-        
+        self.is_outbound = is_outbound
+        self.persona_name = persona_name
+
         base_instruction = (
+            f"Your name is {persona_name}. You work at Coastal Seven Consulting. "
             f"You are a versatile voice assistant specialized in English, Tamil, and Telugu. "
             f"STRICTLY respond ONLY in {target_lang}. "
             "Keep responses extremely concise and natural. "
@@ -88,18 +93,30 @@ class MyAgent(Agent):
         )
 
     async def on_enter(self):
-        logger.info(f"Agent on_enter called. Language: {self.forced_language}")
+        logger.info(f"Agent on_enter called. Language: {self.forced_language}, outbound: {self.is_outbound}")
         if not self.voice_session:
             return
 
-        if self.forced_language == "en":
-            greeting = "Welcome to Coastal Seven Consulting. How can I help you today?"
-        elif self.forced_language == "ta":
-            greeting = "கோஸ்டல் செவன் கன்சல்டிங்கிற்கு உங்களை வரவேற்கிறோம். இன்று நான் உங்களுக்கு எப்படி உதவ முடியும்?" # Tamil
-        elif self.forced_language == "te":
-            greeting = "కోస్టల్ సెవెన్ కన్సల్టింగ్ కు స్వాగతం. ఈ రోజు నేను మీకు ఎలా సహాయం చేయగలను?" # Telugu
+        if self.is_outbound:
+            # Outbound call greeting
+            if self.forced_language == "en":
+                greeting = f"Hello, I'm {self.persona_name} calling from Coastal Seven Consulting. How are you doing today?"
+            elif self.forced_language == "ta":
+                greeting = "வணக்கம், நான் கோஸ்டல் செவன் கன்சல்டிங்கிலிருந்து அழைக்கிறேன். நீங்கள் எப்படி இருக்கிறீர்கள்?"
+            elif self.forced_language == "te":
+                greeting = "హలో, నేను కోస్టల్ సెవెన్ కన్సల్టింగ్ నుండి కాల్ చేస్తున్నాను. మీరు ఎలా ఉన్నారు?"
+            else:
+                greeting = "Hello, I'm calling from Coastal Seven Consulting."
         else:
-            greeting = "Welcome to Coastal Seven Consulting."
+            # Inbound call greeting
+            if self.forced_language == "en":
+                greeting = f"Welcome to Coastal Seven Consulting. I'm {self.persona_name}. How can I help you today?"
+            elif self.forced_language == "ta":
+                greeting = "கோஸ்டல் செவன் கன்சல்டிங்கிற்கு உங்களை வரவேற்கிறோம். இன்று நான் உங்களுக்கு எப்படி உதவ முடியும்?"
+            elif self.forced_language == "te":
+                greeting = "కోస్టల్ సెవెన్ కన్సల్టింగ్ కు స్వాగతం. ఈ రోజు నేను మీకు ఎలా సహాయం చేయగలను?"
+            else:
+                greeting = "Welcome to Coastal Seven Consulting."
 
         # Add a 1s delay to ensure audio is stable before greeting
         await asyncio.sleep(1)
@@ -136,7 +153,13 @@ async def entrypoint(ctx: JobContext):
 
     print(f"Dialed Extension: '{extension}' from {participant.identity}")
 
-    if extension in ["100", "+911171366927", "911171366927"]:
+    # Detect outbound calls via participant attributes
+    is_outbound = attrs.get("call_direction") == "outbound"
+
+    # Empty extension = web UI call (no SIP trunk involved)
+    is_web_ui = (extension == "" and not participant.identity.startswith("sip_"))
+
+    if is_outbound or is_web_ui or extension in ["100", "+911171366927", "911171366927"]:
         forced_language = "en"
     elif extension == "101":
         forced_language = "ta"
@@ -167,11 +190,22 @@ async def entrypoint(ctx: JobContext):
             api_key=os.environ["OPENAI_API_KEY"]
         )
 
-    # Voice Selection based on language
-    if forced_language in ["ta", "te"]:
-        voice_id = "f8f5f1b2-f02d-4d8e-a40d-fd850a487b3d" # Indic voice
-    else:
-        voice_id = "f786b574-daa5-4673-aa0c-cbe3e8534c02" # English voice
+    # Fetch active persona from server
+    persona_id = DEFAULT_PERSONA_ID
+    persona_name = "Sophia"
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"http://127.0.0.1:{os.getenv('PORT', '8000')}/api/personas")
+            data = resp.json()
+            persona_id = data.get("active_persona_id", DEFAULT_PERSONA_ID)
+            persona = get_persona(persona_id)
+            if persona:
+                persona_name = persona["name"]
+    except Exception as e:
+        logger.warning(f"Could not fetch active persona, using default: {e}")
+
+    # Voice Selection based on persona + language
+    voice_id = get_voice_id(persona_id, forced_language)
 
     tts = CartesiaTTS(
         api_key=os.environ["CARTESIA_API_KEY"],
@@ -211,7 +245,7 @@ async def entrypoint(ctx: JobContext):
     transcript_file = f"{base_name}.txt"
     audio_file = f"{base_name}.wav"
 
-    agent = MyAgent(forced_language, participant.identity, ctx.room.name, transcript_file)
+    agent = MyAgent(forced_language, participant.identity, ctx.room.name, transcript_file, is_outbound=is_outbound, persona_name=persona_name)
     agent.voice_session = session
     
     conversation_log: list[dict] = []

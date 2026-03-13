@@ -3,10 +3,11 @@ import time
 import pickle
 import json
 import asyncio
+import uuid
 import faiss
 import numpy as np
 import uvicorn
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -15,6 +16,8 @@ from google import genai
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from livekit import api
+from outbound_calls import make_outbound_call
+from agent_personas import list_personas, get_persona, DEFAULT_PERSONA_ID
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
 import logging
@@ -53,23 +56,87 @@ if os.getenv("GOOGLE_API_KEY"):
     google_client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
 class KnowledgeBase:
-    def __init__(self, embedding_model_type='openai'):
-        self.embedding_model_type = embedding_model_type
-        self.metadata = []
-        # Use IndexFlatIP for cosine similarity
-        self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
-        self.model = None # Placeholder for sentence_transformer if needed
-        rag_logger.info(f"KnowledgeBase initialized (Type: {embedding_model_type})")
+    # ── Valkey / RediSearch shared state ──────────────────────────────────────
+    VALKEY_INDEX      = "idx:livekits:vectors:global"
+    VALKEY_KEY_PREFIX = "lk:store:"
+    _valkey_index_verified: bool = False
+    _valkey_client = None
+
+    def __init__(self):
+        self.backend = os.getenv("VECTOR_STORE", "faiss").lower()
+        if self.backend not in ("faiss", "valkey"):
+            rag_logger.warning(f"Unknown VECTOR_STORE='{self.backend}', defaulting to faiss")
+            self.backend = "faiss"
+
+        if self.backend == "faiss":
+            self.metadata = []  # list of {text, source, doc_id}
+            self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
+            rag_logger.info("KnowledgeBase initialised (backend=faiss)")
+        else:
+            self._connect_valkey()
+            try:
+                self._ensure_valkey_index()
+                rag_logger.info("KnowledgeBase initialised (backend=valkey)")
+            except Exception as e:
+                rag_logger.error(f"[VALKEY] Index setup failed at startup: {e}")
+                rag_logger.warning("[VALKEY] Server will start but Valkey ops will retry on first use")
+
+    def _connect_valkey(self):
+        if KnowledgeBase._valkey_client is not None:
+            return
+        import redis as _redis
+        host     = os.getenv("VALKEY_HOST", "localhost")
+        port     = int(os.getenv("VALKEY_PORT", 6379))
+        password = os.getenv("VALKEY_PASSWORD") or None
+        ssl      = os.getenv("VALKEY_SSL", "false").lower() == "true"
+        KnowledgeBase._valkey_client = _redis.Redis(
+            host=host, port=port, password=password,
+            ssl=ssl, ssl_cert_reqs=None,
+            decode_responses=False,
+            socket_timeout=5, socket_connect_timeout=5
+        )
+        rag_logger.info(f"[VALKEY] Connected to {host}:{port} (ssl={ssl})")
+
+    def _ensure_valkey_index(self):
+        if KnowledgeBase._valkey_index_verified:
+            return
+        import redis as _redis
+        from redis.commands.search.field import TagField, NumericField, VectorField
+        from redis.commands.search.index_definition import IndexDefinition, IndexType
+        r = KnowledgeBase._valkey_client
+        try:
+            r.ft(self.VALKEY_INDEX).info()
+            rag_logger.info(f"[VALKEY] Reusing index: {self.VALKEY_INDEX}")
+        except _redis.exceptions.ResponseError as e:
+            if "not found" in str(e).lower():
+                schema = (
+                    TagField("doc_id"),
+                    TagField("source_name"),
+                    NumericField("chunk_index"),
+                    VectorField("embedding", "HNSW", {
+                        "TYPE": "FLOAT32",
+                        "DIM": EMBEDDING_DIMENSIONS,
+                        "DISTANCE_METRIC": "COSINE"
+                    })
+                )
+                definition = IndexDefinition(prefix=[self.VALKEY_KEY_PREFIX], index_type=IndexType.HASH)
+                r.ft(self.VALKEY_INDEX).create_index(schema, definition=definition)
+                rag_logger.info(f"[VALKEY] Created index: {self.VALKEY_INDEX}")
+            else:
+                raise
+        KnowledgeBase._valkey_index_verified = True
+
+    @staticmethod
+    def _escape_tag(value: str) -> str:
+        special = set(r',.<>{}[]"\':;!@#$%^&*()+=~|/ ')
+        return "".join(("\\" + ch if ch in special else ch) for ch in value)
 
     def _clean_text(self, text: str) -> str:
-        """Removes excessive whitespace and standardizes text for better embedding."""
         if not text: return ""
         import re
-        text = re.sub(r'\s+', ' ', text)
-        return text.strip()
+        return re.sub(r'\s+', ' ', text).strip()
 
     def _get_chunks(self, text: str):
-        """Standard recursive-style chunking."""
         chunks = []
         start = 0
         text_len = len(text)
@@ -87,109 +154,166 @@ class KnowledgeBase:
             if end >= text_len: break
         return chunks
 
-    def clear(self):
-        """Reset the knowledge base."""
-        self.metadata = []
-        self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
-        rag_logger.info("KnowledgeBase cleared")
+    def build_index(self, text: str, source_name: str, doc_id: str = None) -> str:
+        if doc_id is None:
+            doc_id = str(uuid.uuid4())
+        self.clear(doc_id=doc_id)
+        clean_text = self._clean_text(text)
+        chunks = self._get_chunks(clean_text)
+        self.add_documents(chunks, source_name=source_name, doc_id=doc_id)
+        return doc_id
 
-    def add_documents(self, chunks, source_name):
-        """
-        Add documents to the knowledge base by creating embeddings and indexing them.
-        """
+    def add_documents(self, chunks, source_name: str, doc_id: str = None):
         if not chunks:
             rag_logger.warning(f"No chunks to add for source: {source_name}")
             return
-        
-        rag_logger.info(f"Starting document addition for '{source_name}' with {len(chunks)} chunks")
+        if doc_id is None:
+            doc_id = str(uuid.uuid4())
+
+        rag_logger.info(f"[{self.backend.upper()}] Adding {len(chunks)} chunks — doc_id={doc_id} source='{source_name}'")
         add_start = time.time()
-        
-        # Using SentenceTransformer for Indic languages
+
         vectors = indicator_model.encode(chunks).astype('float32')
-        
-        # Switch to Cosine Similarity by normalizing vectors
         faiss.normalize_L2(vectors)
-        
-        embed_time = (time.time() - add_start) * 1000
-        rag_logger.info(f"Embedding generation completed in {embed_time:.2f}ms for {len(chunks)} chunks")
-        
-        index_start = time.time()
-        self.index.add(vectors)
-        index_time = (time.time() - index_start) * 1000
-        rag_logger.info(f"Index update completed in {index_time:.2f}ms")
-        
-        for chunk in chunks:
-            self.metadata.append({"text": chunk, "source": source_name})
-        
-        total_add_time = (time.time() - add_start) * 1000
-        rag_logger.info(f"Document addition completed in {total_add_time:.2f}ms - Total index size: {self.index.ntotal} vectors")
+        rag_logger.info(f"Embeddings generated in {(time.time()-add_start)*1000:.2f}ms")
 
-    def build_index(self, text, source_name):
-        """High-level method to update the single document knowledge base."""
-        self.clear()
-        clean_text = self._clean_text(text)
-        chunks = self._get_chunks(clean_text)
-        self.add_documents(chunks, source_name)
+        if self.backend == "faiss":
+            self.index.add(vectors)
+            for chunk in chunks:
+                self.metadata.append({"text": chunk, "source": source_name, "doc_id": doc_id})
+            rag_logger.info(f"FAISS index size: {self.index.ntotal} vectors")
+        else:
+            r = KnowledgeBase._valkey_client
+            pipeline = r.pipeline()
+            for i, (chunk, vec) in enumerate(zip(chunks, vectors)):
+                key = f"{self.VALKEY_KEY_PREFIX}{doc_id}:{i}"
+                pipeline.hset(key, mapping={
+                    "doc_id":      doc_id,
+                    "source_name": source_name,
+                    "chunk_index": i,
+                    "text_chunk":  chunk,
+                    "embedding":   np.array(vec, dtype=np.float32).tobytes()
+                })
+            pipeline.execute()
+            rag_logger.info(f"[VALKEY] Stored {len(chunks)} hashes under lk:store:{doc_id}:*")
 
-    def search_rag(self, query, k=5):
-        """
-        Search the knowledge base using RAG (Retrieval-Augmented Generation).
-        Logs top 30 matches and returns top 3 for LLM.
-        """
-        rag_logger.info(f"Starting RAG search for query: {query[:100]}..." if len(query) > 100 else f"Starting RAG search for query: {query}")
+        rag_logger.info(f"add_documents done in {(time.time()-add_start)*1000:.2f}ms")
+
+    def clear(self, doc_id: str = None):
+        if self.backend == "faiss":
+            if doc_id:
+                self.metadata = [m for m in self.metadata if m.get("doc_id") != doc_id]
+                self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
+                if self.metadata:
+                    vecs = indicator_model.encode([m["text"] for m in self.metadata]).astype('float32')
+                    faiss.normalize_L2(vecs)
+                    self.index.add(vecs)
+                rag_logger.info(f"FAISS: removed doc_id={doc_id}, {len(self.metadata)} chunks remain")
+            else:
+                self.metadata = []
+                self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
+                rag_logger.info("FAISS index cleared")
+        else:
+            r = KnowledgeBase._valkey_client
+            pattern = f"{self.VALKEY_KEY_PREFIX}{doc_id}:*" if doc_id else f"{self.VALKEY_KEY_PREFIX}*"
+            cursor, deleted = 0, 0
+            while True:
+                cursor, keys = r.scan(cursor=cursor, match=pattern, count=500)
+                if keys:
+                    r.delete(*keys)
+                    deleted += len(keys)
+                if cursor == 0:
+                    break
+            rag_logger.info(f"[VALKEY] Deleted {deleted} keys (pattern={pattern})")
+
+    def list_documents(self):
+        """Returns list of {source_name, chunk_count} grouped by category."""
+        if self.backend == "faiss":
+            docs = {}
+            for m in self.metadata:
+                sn = m.get("source", "unknown")
+                if sn not in docs:
+                    docs[sn] = {"source_name": sn, "chunk_count": 0}
+                docs[sn]["chunk_count"] += 1
+            return list(docs.values())
+        else:
+            r = KnowledgeBase._valkey_client
+            prefix = self.VALKEY_KEY_PREFIX
+            docs = {}
+            for key in r.scan_iter(match=f"{prefix}*", count=500):
+                source_raw = r.hget(key, "source_name")
+                sn = source_raw.decode() if source_raw else "unknown"
+                if sn not in docs:
+                    docs[sn] = {"source_name": sn, "chunk_count": 0}
+                docs[sn]["chunk_count"] += 1
+            return list(docs.values())
+
+    def search_rag(self, query: str, k: int = 5, source_name: str = None) -> str:
+        rag_logger.info(f"[{self.backend.upper()}] RAG search: '{query[:100]}' source_name={source_name}")
         start_time = time.time()
-        
-        # Check if index is empty
-        if self.index is None or self.index.ntotal == 0:
-            rag_logger.warning(f"Knowledge base is empty, returning NO_INFORMATION response")
-            return "NO_INFORMATION_IN_KNOWLEDGE_BASE"
-        
-        # Step 1: Encode query
-        encode_start = time.time()
-        query_vector = indicator_model.encode([query]).astype('float32')
-        # Normalize query vector for Cosine Similarity
-        faiss.normalize_L2(query_vector)
-        
-        encode_time = (time.time() - encode_start) * 1000
-        
-        # Step 2: Search FAISS index for top 30
-        search_start = time.time()
-        D, I = self.index.search(query_vector, k)
-        search_time = (time.time() - search_start) * 1000
-        rag_logger.info(f"FAISS search (k={k}) completed in {search_time:.2f}ms")
-
-        # Step 3: Log top 30 and pick top 3 for LLM
         THRESHOLD = 0.25
-        llm_results = []
-        
-        rag_logger.info(f"--- [RAG] TOP {k} MATCHES FOR DEBUGGING ---")
-        for i, idx in enumerate(I[0]):
-            if idx == -1 or idx >= len(self.metadata):
-                continue
-                
-            score = float(D[0][i])
-            content = self.metadata[idx]['text']
-            status = "✅ ABOVE THRESHOLD" if score > THRESHOLD else "❌ BELOW THRESHOLD"
-            
-            # Log ALL matches
-            rag_logger.info(f"Match {i+1:02d} | Score: {score:.4f} | {status} | {content}")
 
-            # Collect top 3 for LLM
-            if score > THRESHOLD and len(llm_results) < 3:
-                llm_results.append(f"[{self.metadata[idx]['source']}]: {self.metadata[idx]['text']}")
-        
-        rag_logger.info(f"--- [RAG] END TOP {k} ---")
-        
+        query_vector = indicator_model.encode([query]).astype('float32')
+        faiss.normalize_L2(query_vector)
+        llm_results = []
+
+        if self.backend == "faiss":
+            if self.index.ntotal == 0:
+                rag_logger.warning("FAISS index is empty")
+                return "NO_INFORMATION_IN_KNOWLEDGE_BASE"
+            D, I = self.index.search(query_vector, k)
+            rag_logger.info(f"--- [RAG FAISS] TOP {k} MATCHES ---")
+            for i, idx in enumerate(I[0]):
+                if idx == -1 or idx >= len(self.metadata): continue
+                meta = self.metadata[idx]
+                if source_name and meta.get("source") != source_name: continue
+                score = float(D[0][i])
+                status = "✅ ABOVE" if score > THRESHOLD else "❌ BELOW"
+                rag_logger.info(f"  Match {i+1:02d} | Score: {score:.4f} | {status} | {meta['text'][:80]}")
+                if score > THRESHOLD and len(llm_results) < 3:
+                    llm_results.append(f"[{meta['source']}]: {meta['text']}")
+            rag_logger.info(f"--- [RAG FAISS] END ---")
+
+        else:
+            r = KnowledgeBase._valkey_client
+            from redis.commands.search.query import Query as RQuery
+            total_count = sum(1 for _ in r.scan_iter(match=f"{self.VALKEY_KEY_PREFIX}*", count=500))
+            rag_logger.info(f"[VALKEY] {total_count} total chunk(s) in store")
+            if total_count == 0:
+                return "NO_INFORMATION_IN_KNOWLEDGE_BASE"
+            vec_bytes = query_vector.astype('float32').tobytes()
+            if source_name:
+                q_str = f"(@source_name:{{{self._escape_tag(source_name)}}})=>[KNN {k} @embedding $vec AS score]"
+            else:
+                q_str = f"*=>[KNN {k} @embedding $vec AS score]"
+            search_q = RQuery(q_str).return_fields("text_chunk", "source_name", "score").dialect(2)
+            results = r.ft(self.VALKEY_INDEX).search(search_q, query_params={"vec": vec_bytes})
+            rag_logger.info(f"--- [RAG VALKEY] TOP {k} MATCHES ---")
+            for i, doc in enumerate(results.docs):
+                score = float(doc.score) if hasattr(doc, 'score') else 0.0
+                text  = doc.text_chunk  if hasattr(doc, 'text_chunk') else ""
+                src   = doc.source_name if hasattr(doc, 'source_name') else ""
+                status = "✅ ABOVE" if score > THRESHOLD else "❌ BELOW"
+                rag_logger.info(f"  Match {i+1:02d} | Score: {score:.4f} | {status} | {text[:80]}")
+                if score > THRESHOLD and len(llm_results) < 3:
+                    llm_results.append(f"[{src}]: {text}")
+            rag_logger.info(f"--- [RAG VALKEY] END ---")
+
         total_time = (time.time() - start_time) * 1000
         result_text = "\n\n---\n\n".join(llm_results) if llm_results else "No specific information found."
-        
-        rag_logger.info(f"[RAG] 🔎 DONE. Latency: {total_time:.2f} ms | Sent to LLM: {len(llm_results)}")
-        
+        rag_logger.info(f"[RAG] 🔎 DONE. Latency: {total_time:.2f}ms | Sent to LLM: {len(llm_results)}")
         return result_text
 
 
 # Initialize global RAG instance
 rag = KnowledgeBase()
+rag_logger.info(f"RAG backend: {rag.backend}")
+
+# Active category for RAG queries (set by UI dropdown)
+active_source_name: str = None
+
+# Active agent persona (set by UI selector)
+active_persona_id: str = DEFAULT_PERSONA_ID
 
 def analyze_transcript_content(transcript_text: str):
     """Performs LLM analysis on a transcript for handoff/summary."""
@@ -281,12 +405,12 @@ def get_token():
     }
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-    """Receives a file and updates the singleton RAG index."""
+async def upload_file(file: UploadFile = File(...), category: str = Form("general")):
+    """Receives a file and category, indexes it under that category for scoped queries."""
     try:
         file_extension = os.path.splitext(file.filename)[1].lower()
         text_content = ""
-        
+
         if file_extension == ".pdf":
             pdf_reader = PdfReader(file.file)
             for page in pdf_reader.pages:
@@ -296,15 +420,80 @@ async def upload_file(file: UploadFile = File(...)):
         else:
             content = await file.read()
             text_content = content.decode("utf-8", errors="ignore")
-        
-        logger.info(f"🚀 Updating RAG Index for: {file.filename}...")
-        rag.build_index(text_content, file.filename)
 
-        return {"status": "success", "filename": file.filename}
+        logger.info(f"🚀 Indexing '{file.filename}' under category='{category}' ({rag.backend} backend)...")
+        doc_id = rag.build_index(text_content, source_name=category)
+        logger.info(f"✅ Indexed '{file.filename}' under category='{category}' — doc_id={doc_id}")
+        return {"status": "success", "filename": file.filename, "category": category, "doc_id": doc_id}
 
     except Exception as e:
         logger.error(f"Error handling upload: {e}")
         return {"status": "error", "message": str(e)}
+
+@app.get("/api/documents")
+async def list_documents():
+    """Returns all indexed categories with chunk counts and active selection."""
+    try:
+        docs = rag.list_documents()
+        return {"documents": docs, "active_source_name": active_source_name}
+    except Exception as e:
+        logger.error(f"Error listing documents: {e}")
+        return {"documents": [], "active_source_name": None}
+
+class ActiveDocRequest(BaseModel):
+    source_name: str | None = None
+
+@app.post("/api/set-active-doc")
+async def set_active_doc(req: ActiveDocRequest):
+    """Sets the active category used by the agent for RAG queries."""
+    global active_source_name
+    active_source_name = req.source_name
+    logger.info(f"Active source_name set to: {active_source_name}")
+    return {"status": "ok", "active_source_name": active_source_name}
+
+@app.get("/api/personas")
+async def get_personas():
+    """Returns available agent personas and the currently active one."""
+    return {"personas": list_personas(), "active_persona_id": active_persona_id}
+
+class SetPersonaRequest(BaseModel):
+    persona_id: str
+
+@app.post("/api/set-persona")
+async def set_persona(req: SetPersonaRequest):
+    """Sets the active agent persona."""
+    global active_persona_id
+    persona = get_persona(req.persona_id)
+    if not persona:
+        return {"status": "error", "message": f"Unknown persona: {req.persona_id}"}
+    active_persona_id = req.persona_id
+    logger.info(f"Active persona set to: {active_persona_id}")
+    return {"status": "ok", "active_persona_id": active_persona_id}
+
+class OutboundCallRequest(BaseModel):
+    phone_number: str
+
+@app.post("/api/outbound-call")
+async def outbound_call(req: OutboundCallRequest):
+    """Initiate an outbound call to a phone number via Vobiz SIP."""
+    phone = req.phone_number.strip()
+    if not phone:
+        return {"status": "error", "message": "Phone number is required"}
+    # Ensure it starts with + for international format
+    if not phone.startswith("+"):
+        phone = "+91" + phone  # Default to India
+    logger.info(f"Outbound call requested to: {phone}")
+    result = await make_outbound_call(phone)
+    return result
+
+@app.post("/api/clear-db")
+async def clear_db():
+    """Clears all indexed documents from the vector store."""
+    rag.clear()
+    global active_source_name
+    active_source_name = None
+    logger.info("Vector store cleared")
+    return {"status": "ok"}
 
 # --- Session Browser Endpoints ---
 
@@ -374,12 +563,15 @@ async def get_transcript(session_id: str):
     return lines
 
 @mcp.tool()
-def query_knowledge_base(question: str) -> str:
-    """Queries the vector database (RAG) to find an answer."""
+def query_knowledge_base(question: str, source_name: str = None) -> str:
+    """Queries the vector database (RAG) to find an answer.
+    Pass source_name to restrict search to a specific category (e.g. 'general', 'finance', 'policy').
+    Falls back to the active category set by the UI."""
     start = time.perf_counter()
-    result = rag.search_rag(question)
+    effective_source = source_name or active_source_name
+    result = rag.search_rag(question, source_name=effective_source)
     end = time.perf_counter()
-    logger.info(f"[MCP] Tool Execution: {(end - start)*1000:.2f} ms")
+    logger.info(f"[MCP] Tool Execution: {(end - start)*1000:.2f} ms | source_name={effective_source}")
     return f"Relevant Context:\n{result}"
 
 @mcp.tool()

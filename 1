@@ -1,0 +1,55 @@
+nohup: ignoring input
+[02/25/26 08:13:13] INFO     Use pytorch device_name: SentenceTransformer.py:219
+                             cpu                                                
+                    INFO     Load pretrained          SentenceTransformer.py:227
+                             SentenceTransformer:                               
+                             l3cube-pune/indic-senten                           
+                             ce-similarity-sbert                                
+Traceback (most recent call last):
+  File "/home/ubuntu/livekits/server.py", line 41, in <module>
+    indicator_model = SentenceTransformer("l3cube-pune/indic-sentence-similarity-sbert")
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/sentence_transformers/SentenceTransformer.py", line 327, in __init__
+    modules, self.module_kwargs = self._load_sbert_model(
+                                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/sentence_transformers/SentenceTransformer.py", line 2305, in _load_sbert_model
+    module = module_class.load(
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/sentence_transformers/models/Transformer.py", line 366, in load
+    return cls(model_name_or_path=model_name_or_path, **init_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/sentence_transformers/models/Transformer.py", line 89, in __init__
+    self._load_model(model_name_or_path, config, cache_dir, backend, is_peft_model, **model_args)
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/sentence_transformers/models/Transformer.py", line 197, in _load_model
+    self.auto_model = AutoModel.from_pretrained(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/transformers/models/auto/auto_factory.py", line 604, in from_pretrained
+    return model_class.from_pretrained(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 277, in _wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 5048, in from_pretrained
+    ) = cls._load_pretrained_model(
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 5316, in _load_pretrained_model
+    load_state_dict(checkpoint_files[0], map_location="meta", weights_only=weights_only).keys()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 526, in load_state_dict
+    return torch.load(
+           ^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/torch/serialization.py", line 1540, in load
+    return _load(
+           ^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/torch/serialization.py", line 2143, in _load
+    result = unpickler.load()
+             ^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/torch/_weights_only_unpickler.py", line 539, in load
+    self.append(self.persistent_load(pid))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/torch/serialization.py", line 2107, in persistent_load
+    typed_storage = load_tensor(
+                    ^^^^^^^^^^^^
+  File "/home/ubuntu/livekits/venv/lib/python3.12/site-packages/torch/serialization.py", line 2060, in load_tensor
+    zip_file.get_storage_from_record(name, numel, torch.UntypedStorage)
+KeyboardInterrupt

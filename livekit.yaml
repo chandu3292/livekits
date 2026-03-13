@@ -15,4 +15,4 @@ redis:
 
 sip: {}
 logging:
-  level: info
+  level: debug
