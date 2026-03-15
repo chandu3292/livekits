@@ -20,7 +20,7 @@ const App: React.FC = () => {
   const [isLoadingTranscript, setIsLoadingTranscript] = useState(false);
 
   // Chat state
-  const [chatMessages, setChatMessages] = useState<Array<{ role: string; text: string }>>([]);
+  const [chatMessages, setChatMessages] = useState<Array<{ role: string; text: string; time?: string }>>([]);
   const [chatInput, setChatInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sessionId] = useState(() => `session_${Date.now()}`);
@@ -156,8 +156,10 @@ const App: React.FC = () => {
     const message = chatInput.trim();
     if (!message || isSending) return;
 
+    const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
     setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', text: message }]);
+    setChatMessages(prev => [...prev, { role: 'user', text: message, time: timeString }]);
     setIsSending(true);
 
     try {
@@ -168,14 +170,17 @@ const App: React.FC = () => {
       });
       const data = await res.json();
 
+      const resTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
       if (data.status === "success") {
-        setChatMessages(prev => [...prev, { role: 'assistant', text: data.response }]);
+        setChatMessages(prev => [...prev, { role: 'assistant', text: data.response, time: resTime }]);
       } else {
-        setChatMessages(prev => [...prev, { role: 'assistant', text: `Error: ${data.message}` }]);
+        setChatMessages(prev => [...prev, { role: 'assistant', text: `Error: ${data.message}`, time: resTime }]);
       }
     } catch (err) {
       console.error(err);
-      setChatMessages(prev => [...prev, { role: 'assistant', text: 'Failed to get response. Please try again.' }]);
+      const errTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setChatMessages(prev => [...prev, { role: 'assistant', text: 'Failed to get response. Please try again.', time: errTime }]);
     } finally {
       setIsSending(false);
       inputRef.current?.focus();
@@ -282,21 +287,21 @@ const App: React.FC = () => {
             className={`tab ${activeTab === 'chat' ? 'active' : ''}`}
             onClick={() => setActiveTab('chat')}
           >
-            <MessageSquare size={18} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+            <MessageSquare size={18} />
             Chat
           </button>
           <button
             className={`tab ${activeTab === 'speech' ? 'active' : ''}`}
             onClick={() => setActiveTab('speech')}
           >
-            <Mic size={18} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+            <Mic size={18} />
             Speech
           </button>
           <button
             className={`tab ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => setActiveTab('history')}
           >
-            <History size={18} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+            <History size={18} />
             History
           </button>
         </div>
@@ -333,6 +338,7 @@ const App: React.FC = () => {
               ) : (
                 chatMessages.map((msg, idx) => (
                   <div key={idx} className={`message ${msg.role}`}>
+                    {msg.time && <span className="ts">{msg.time}</span>}
                     <div className="message-content">{msg.text}</div>
                   </div>
                 ))
