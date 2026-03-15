@@ -1,7 +1,0 @@
-{
-  "rule": {
-    "dispatchRuleDirect": {
-      "roomName": "phone_call_room"
-    }
-  }
-}

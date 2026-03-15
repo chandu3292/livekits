@@ -1,3 +1,0 @@
-[11:38:54] 🤖 Agent  : Welcome to Coastal Seven Consulting. How can I help you today?
-[11:39:00] 👤 User   : Hello.
-[11:39:05] 🤖 Agent  : Hi there! How can I assist you today?

@@ -1,29 +1,32 @@
-# LiveKit AI Agent with SIP & Handoff Analysis
+# DocQuery - Multimodal AI Agent Platform
 
-A multimodal AI voice agent platform with SIP telephony (inbound + outbound), Vector RAG knowledge base, Google Calendar scheduling, and a Handoff Analysis dashboard for human agents.
+A multimodal AI agent platform with browser-based voice conversation, text chat, OCR document processing, Vector RAG knowledge base, and Google Calendar scheduling.
 
 ---
 
 ## Quick Start
 
 ### Start / Restart All Services
-```bash
-bash run_all.sh
 ```
-This launches: Redis, LiveKit Server, SIP Gateway, RAG Server (`server.py`), and AI Agent (`mcp-agent.py`).
-The script kills any previous instances before starting.
+start.bat restart
+```
+Launches: LiveKit Server, FastAPI Server (`server.py`), and AI Voice Agent (`mcp-agent.py`).
 
 ### Stop All Services
-```bash
-pkill -f livekit && pkill -f python3
+```
+start.bat stop
 ```
 
-### Monitoring Logs
-```bash
-tail -f logs/agent.log          # AI agent thoughts
-tail -f logs/server.log         # RAG server & API
-tail -f logs/livekit-sip.log    # SIP gateway
-tail -f logs/livekit-server.log # LiveKit core
+### Check Status
+```
+start.bat status
+```
+
+### Logs
+```
+logs\livekit.log   - LiveKit server
+logs\server.log    - FastAPI backend
+logs\agent.log     - Voice agent
 ```
 
 ---
@@ -32,87 +35,64 @@ tail -f logs/livekit-server.log # LiveKit core
 
 ```
 livekits/
-├── server.py                  # FastAPI backend (RAG, API endpoints, MCP tools)
-├── mcp-agent.py               # LiveKit AI agent (voice, SIP, tool calls)
-├── provision_sip.py           # SIP trunk & dispatch rule provisioning
-├── run_all.sh                 # Service orchestration script
-├── outbound_calls/            # Outbound call module (Vobiz SIP)
-│   ├── __init__.py
-│   ├── trunk.py               # Outbound trunk management & caching
-│   └── dialer.py              # SIP participant dialer
+├── server.py                  # FastAPI backend (RAG, chat, OCR, MCP tools)
+├── mcp-agent.py               # LiveKit AI voice agent (Gemini + Deepgram STT + Cartesia TTS)
+├── agent_personas.py          # Voice persona definitions
+├── start.bat                  # Windows service orchestration
+├── ocr/                       # OCR module (pytesseract)
+│   ├── extractor.py           # Image preprocessing & text extraction
+│   ├── table_extractor.py     # Structured table & key-value extraction
+│   └── file_handlers.py       # PDF, DOCX, image, text file routing
 ├── calendar_integration/      # Google Calendar appointment scheduling
-│   ├── google_calendar.py     # Calendar API integration
-│   ├── availability_checker.py# Business hours & slot logic
-│   └── appointment_manager.py # Appointment coordination
+├── credentials/               # Service account keys
 ├── frontend/                  # React/Vite UI
 │   └── src/App.tsx
-├── sip/                       # LiveKit SIP binary & config
 ├── sessions/                  # Recorded .wav audio & .txt transcripts
-├── livekit.yaml               # LiveKit server config
-├── sip-config.yaml            # SIP gateway config
-└── handoffs.json              # AI-to-human transfer records
+└── livekit.yaml               # LiveKit server config
 ```
 
 ### Core Services
 
 | Service | File | Description |
 |---------|------|-------------|
-| RAG Server | `server.py` | FastAPI backend — vector embeddings (FAISS/Valkey), file upload, transcript parsing, handoff analysis, MCP tool server |
-| AI Agent | `mcp-agent.py` | LiveKit voice agent — listens to speech, queries knowledge base, schedules appointments, transfers calls |
-| SIP Gateway | `sip/` | Bridges SIP/telephony traffic into LiveKit rooms |
-| Frontend | `frontend/` | React dashboard for live calls, document upload, session history, handoffs, and outbound dialing |
+| FastAPI Server | `server.py` | Backend — FAISS vector store, file upload, OCR, text chat (Gemini), MCP tool server |
+| Voice Agent | `mcp-agent.py` | LiveKit voice agent — Deepgram STT, Gemini LLM, Cartesia TTS |
+| Frontend | `frontend/` | React UI with Chat, Speech, and History tabs |
 
 ---
 
 ## Features
 
-### Inbound Calls (SIP)
-Callers dial in via SIP trunk. Extension-based language routing:
-- **100** — English
-- **101** — Tamil
-- **102** — Telugu
+### Text Chat
+Chat with the AI agent via the browser. Uses Gemini with RAG context from uploaded documents.
 
-Provisioned via `provision_sip.py` which creates inbound trunks, dispatch rules, and the outbound trunk.
+### Voice Conversation (Speech Tab)
+Connect via browser microphone for real-time voice conversation with the AI agent powered by LiveKit.
 
-### Outbound Calls (Vobiz SIP)
-Dial out to any phone number from the UI. The AI agent greets with *"Hello, I'm calling from Coastal Seven Consulting"* and then operates identically to inbound calls.
-
-**Module:** `outbound_calls/`
-- `trunk.py` — Creates/caches a Vobiz outbound SIP trunk
-- `dialer.py` — Creates a SIP participant that dials out and joins a LiveKit room
-
-**API:** `POST /api/outbound-call` with `{"phone_number": "+91XXXXXXXXXX"}`
+### OCR Document Processing
+Upload PDFs, DOCX, images (PNG, JPG, TIFF, BMP) with:
+- pytesseract OCR with image preprocessing
+- Structured table extraction
+- Key-value pair detection
 
 ### Vector RAG (Knowledge Base)
-Upload PDF, TXT, or MD files via the UI to give the agent domain knowledge. Supports two backends:
-- **FAISS** — In-memory, local (default)
-- **Valkey/Redis** — Shared, persistent (set `VECTOR_STORE=valkey` in `.env`)
-
-Uses `l3cube-pune/indic-sentence-similarity-sbert` for multilingual embeddings (English, Tamil, Telugu).
+Upload documents to give the agent domain knowledge. Uses FAISS with `l3cube-pune/indic-sentence-similarity-sbert` for multilingual embeddings.
 
 ### Google Calendar Scheduling
-The agent can check availability and book appointments through voice conversation. See `calendar_integration/README.md` for setup details.
-
-### Smart Handoff (Transfer to Human)
-When a caller requests a human agent, the AI:
-1. Initiates a SIP transfer to the configured number
-2. Analyzes the call transcript (sentiment, user details, actionable requests)
-3. Saves the analysis to the Handoffs dashboard
+The agent can check availability and book appointments through voice or text conversation.
 
 ### Session Recording
-All calls are recorded as 48kHz mono WAV files with timestamped transcripts in `sessions/`.
+All voice sessions are recorded as 48kHz mono WAV files with timestamped transcripts in `sessions/`.
 
 ---
 
-## Dashboard
+## UI
 
-Access at `http://<server-ip>:8000`
+Access at `http://localhost:8005`
 
-- **Live Call** — Connect via browser microphone to test the agent
-- **Document Upload** — Drag-and-drop files with category tagging for scoped RAG
-- **Outbound Call** — Enter a phone number and click Call to dial out
+- **Chat** — Text conversation with the AI agent
+- **Speech** — Real-time voice conversation via browser microphone
 - **History** — Browse past sessions with audio playback and transcripts
-- **Handoffs** — Review AI-to-human transfers with sentiment analysis
 
 ---
 
@@ -125,37 +105,21 @@ Access at `http://<server-ip>:8000`
 LIVEKIT_URL=ws://localhost:7880
 LIVEKIT_API_KEY=devkey
 LIVEKIT_API_SECRET=<your-secret>
-TOKEN_URL=ws://localhost:7880
 
-# LLM
-OPENAI_API_KEY=<key>
-OPENAI_MODEL=gpt-4o-mini
+# STT / TTS
+DEEPGRAM_API_KEY=<key>
+CARTESIA_API_KEY=<key>
+
+# LLM (Gemini only)
+LLM_PROVIDER=gemini
 GOOGLE_API_KEY=<key>
 GEMINI_MODEL=gemini-2.5-flash-lite
-
-# Vector Store Backend — options: faiss, valkey
-VECTOR_STORE=valkey
-
-# Valkey / Redis (when VECTOR_STORE=valkey)
-VALKEY_HOST=<host>
-VALKEY_PORT=6379
-VALKEY_PASSWORD=
-VALKEY_SSL=true
-
-# Vobiz SIP (Outbound Calls)
-VOBIZ_SIP_HOST=<sip-host>
-VOBIZ_SIP_USERNAME=<username>
-VOBIZ_SIP_PASSWORD=<password>
+CHAT_MODEL=gemini-2.5-flash
 
 # Google Calendar
-GOOGLE_CALENDAR_CREDENTIALS=/path/to/service-account-key.json
-GOOGLE_CALENDAR_ID=primary
-```
-
-### SIP Provisioning
-After updating `.env`, re-provision SIP trunks and dispatch rules:
-```bash
-./venv/bin/python3 provision_sip.py
+GOOGLE_CALENDAR_CREDENTIALS=credentials/calendar.json
+GOOGLE_CALENDAR_ID=<calendar-id>
+DEFAULT_TIMEZONE_OFFSET=330
 ```
 
 ---
@@ -165,17 +129,15 @@ After updating `.env`, re-provision SIP trunks and dispatch rules:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/token` | Get LiveKit access token |
-| POST | `/upload` | Upload document for RAG indexing |
-| GET | `/api/documents` | List indexed document categories |
-| POST | `/api/set-active-doc` | Set active RAG category |
-| POST | `/api/outbound-call` | Initiate outbound SIP call |
-| POST | `/api/clear-db` | Clear all vector store data |
+| POST | `/upload` | Upload document for RAG indexing (with OCR) |
+| POST | `/api/chat` | Text chat with AI agent |
+| POST | `/api/chat/clear` | Clear chat history |
+| POST | `/api/ocr` | Standalone OCR extraction |
 | GET | `/api/sessions` | List recorded sessions |
 | GET | `/api/sessions/{id}/transcript` | Get session transcript |
-| POST | `/api/analyze-transcript` | Run LLM analysis on transcript text |
-| GET | `/api/handoffs` | List AI-to-human transfer records |
+| GET | `/api/personas` | Get active persona |
 
-### MCP Tools (used by the AI agent)
+### MCP Tools (used by the voice agent)
 
 | Tool | Description |
 |------|-------------|
@@ -183,7 +145,6 @@ After updating `.env`, re-provision SIP trunks and dispatch rules:
 | `check_and_book_appointment` | Check calendar availability |
 | `schedule_appointment` | Book a Google Calendar appointment |
 | `get_appointment_info` | Get appointment configuration |
-| `transfer_to_human` | SIP transfer + transcript analysis |
 
 ---
 

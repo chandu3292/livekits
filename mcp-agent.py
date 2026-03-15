@@ -16,14 +16,17 @@ from livekit.agents import (
 from livekit import rtc
 from livekit.agents.voice import ConversationItemAddedEvent
 import wave
-import struct
-from livekit.plugins import silero, openai, google
+import json
+from livekit.plugins import silero, google
 from livekit.plugins.deepgram import STT as DeepgramSTT
 from livekit.plugins.cartesia import TTS as CartesiaTTS
 from agent_personas import get_voice_id, get_persona, DEFAULT_PERSONA_ID
-import httpx
 
-logging.basicConfig(level=logging.INFO)
+import sys
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[logging.StreamHandler(stream=open(sys.stdout.fileno(), mode='w', encoding='utf-8', closefd=False))]
+)
 logger = logging.getLogger("mcp-agent")
 
 load_dotenv()
@@ -35,26 +38,22 @@ server = AgentServer()
 
 
 class MyAgent(Agent):
-    def __init__(self, forced_language, participant_identity, room_name, transcript_file, is_outbound=False, persona_name="Sophia"):
-        lang_names = {"en": "English", "ta": "Tamil (தமிழ்)", "te": "Telugu (తెలుగు)"}
+    def __init__(self, forced_language, participant_identity, room_name, transcript_file, persona_name="Sophia"):
+        lang_names = {"en": "English", "te": "Telugu", "hi": "Hindi"}
         target_lang = lang_names.get(forced_language, "English")
-        self.is_outbound = is_outbound
         self.persona_name = persona_name
 
         base_instruction = (
-            f"Your name is {persona_name}. You work at Coastal Seven Consulting. "
-            f"You are a versatile voice assistant specialized in English, Tamil, and Telugu. "
+            f"Your name is {persona_name}. You work at DocQuery. "
+            f"You are a versatile voice assistant specialized in English, Hindi, and Telugu. "
             f"STRICTLY respond ONLY in {target_lang}. "
             "Keep responses extremely concise and natural. "
             "For ANY question (EXCEPT for order bookings or providing order details), you MUST use the tool 'query_knowledge_base'. "
             "Explain the answer using the information found in the tool context. "
-            "give respose as you are talking in a phone call conversation"
+            "give respose as you are talking in a conversation"
             "If the context contains relevant details, synthesize a helpful response from them. "
             "Only say you don't know if the context is completely unrelated to the question. "
             f"STRICTLY call the tool in {target_lang}."
-            "\n\nHAND OFF TO HUMAN:\n"
-            "If the user asks to speak to a human, agent, supervisor, or real person, say 'One moment, I am transferring your call to a human agent.' and call 'transfer_to_human' IMMEDIATELY.\n"
-            f"Use these details for the tool call: participant_identity='{participant_identity}', room_name='{room_name}', transcript_path='{transcript_file}'\n"
             "\n\nAPPOINTMENT SCHEDULING:\n"
             "When user asks about appointment details (like duration or break time), call 'get_appointment_info' to get current configuration.\n"
             "All appointments are stored in Google Calendar.\n"
@@ -86,48 +85,26 @@ class MyAgent(Agent):
 
     async def on_user_turn_completed(self, turn_ctx, new_message):
         self.iteration_count += 1
-        logger.info(
-            f"\n------------------***********************************************"
-            f"({self.iteration_count})"
-            f"------------------***********************************************"
-        )
 
     async def on_enter(self):
-        logger.info(f"Agent on_enter called. Language: {self.forced_language}, outbound: {self.is_outbound}")
+        logger.info(f"Agent on_enter called. Language: {self.forced_language}")
         if not self.voice_session:
             return
 
-        if self.is_outbound:
-            # Outbound call greeting
-            if self.forced_language == "en":
-                greeting = f"Hello, I'm {self.persona_name} calling from Coastal Seven Consulting. How are you doing today?"
-            elif self.forced_language == "ta":
-                greeting = "வணக்கம், நான் கோஸ்டல் செவன் கன்சல்டிங்கிலிருந்து அழைக்கிறேன். நீங்கள் எப்படி இருக்கிறீர்கள்?"
-            elif self.forced_language == "te":
-                greeting = "హలో, నేను కోస్టల్ సెవెన్ కన్సల్టింగ్ నుండి కాల్ చేస్తున్నాను. మీరు ఎలా ఉన్నారు?"
-            else:
-                greeting = "Hello, I'm calling from Coastal Seven Consulting."
+        if self.forced_language == "hi":
+            greeting = f"DocQuery में आपका स्वागत है। मैं {self.persona_name} हूँ। आज मैं आपकी कैसे मदद कर सकती हूँ?"
+        elif self.forced_language == "te":
+            greeting = f"DocQuery కు స్వాగతం. నేను {self.persona_name}. ఈ రోజు నేను మీకు ఎలా సహాయం చేయగలను?"
         else:
-            # Inbound call greeting
-            if self.forced_language == "en":
-                greeting = f"Welcome to Coastal Seven Consulting. I'm {self.persona_name}. How can I help you today?"
-            elif self.forced_language == "ta":
-                greeting = "கோஸ்டல் செவன் கன்சல்டிங்கிற்கு உங்களை வரவேற்கிறோம். இன்று நான் உங்களுக்கு எப்படி உதவ முடியும்?"
-            elif self.forced_language == "te":
-                greeting = "కోస్టల్ సెవెన్ కన్సల్టింగ్ కు స్వాగతం. ఈ రోజు నేను మీకు ఎలా సహాయం చేయగలను?"
-            else:
-                greeting = "Welcome to Coastal Seven Consulting."
+            greeting = f"Welcome to DocQuery. I'm {self.persona_name}. How can I help you today?"
 
-        # Add a 1s delay to ensure audio is stable before greeting
         await asyncio.sleep(1)
-
         await self.voice_session.say(
             greeting,
             allow_interruptions=False,
             add_to_chat_ctx=False
         )
-        
-        # Manually log the greeting to transcript since it's not in chat context
+
         if hasattr(self, "log_callback") and self.log_callback:
             self.log_callback("assistant", greeting)
 
@@ -137,81 +114,45 @@ async def entrypoint(ctx: JobContext):
 
     await ctx.connect(auto_subscribe=AutoSubscribe.SUBSCRIBE_ALL)
 
-    # ?? Wait for participant to join
     participant = await ctx.wait_for_participant()
-    attrs = participant.attributes
-    logger.info(f"Participant joined: {participant.identity} with attributes: {attrs}")
-    
-    # Try multiple common keys for the dialed extension
-    extension = (
-        attrs.get("sip.trunkPhoneNumber") or 
-        attrs.get("sip.to_user") or 
-        attrs.get("sip.called_number") or 
-        ""
-    )
-    extension = extension.strip()
+    logger.info(f"Participant joined: {participant.identity}")
 
-    print(f"Dialed Extension: '{extension}' from {participant.identity}")
+    # Read persona and language from participant metadata
+    persona_id = DEFAULT_PERSONA_ID
+    forced_language = "en"
+    try:
+        meta = json.loads(participant.metadata or "{}")
+        persona_id = meta.get("persona_id", DEFAULT_PERSONA_ID)
+        forced_language = meta.get("language", "en")
+    except Exception:
+        pass
 
-    # Detect outbound calls via participant attributes
-    is_outbound = attrs.get("call_direction") == "outbound"
+    persona = get_persona(persona_id)
+    persona_name = persona["name"] if persona else "Sophia"
+    logger.info(f"Using persona: {persona_name} ({persona_id}), language: {forced_language}")
 
-    # Empty extension = web UI call (no SIP trunk involved)
-    is_web_ui = (extension == "" and not participant.identity.startswith("sip_"))
-
-    if is_outbound or is_web_ui or extension in ["100", "+911171366927", "911171366927"]:
-        forced_language = "en"
-    elif extension == "101":
-        forced_language = "ta"
-    elif extension == "102":
-        forced_language = "te"
-    else:
-        logger.warning(f"Unknown extension '{extension}', REJECTING call.")
-        await ctx.room.disconnect()
-        return
-
-    # STT locked to selected language
+    # STT - map language codes for Deepgram
+    stt_lang = forced_language if forced_language != "te" else "en"
     stt = DeepgramSTT(
         api_key=os.environ["DEEPGRAM_API_KEY"],
         model="nova-3",
-        language=forced_language
+        language=stt_lang
     )
 
-    llm_provider = os.getenv("LLM_PROVIDER", "openai").lower()
+    # LLM - Gemini
+    llm = google.LLM(
+        model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite"),
+        api_key=os.environ["GOOGLE_API_KEY"]
+    )
 
-    if llm_provider == "gemini":
-        llm = google.LLM(
-            model="gemini-2.5-flash-lite",
-            api_key=os.environ["GOOGLE_API_KEY"]
-        )
-    else:
-        llm = openai.LLM(
-            model="gpt-4o",
-            api_key=os.environ["OPENAI_API_KEY"]
-        )
-
-    # Fetch active persona from server
-    persona_id = DEFAULT_PERSONA_ID
-    persona_name = "Sophia"
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(f"http://127.0.0.1:{os.getenv('PORT', '8000')}/api/personas")
-            data = resp.json()
-            persona_id = data.get("active_persona_id", DEFAULT_PERSONA_ID)
-            persona = get_persona(persona_id)
-            if persona:
-                persona_name = persona["name"]
-    except Exception as e:
-        logger.warning(f"Could not fetch active persona, using default: {e}")
-
-    # Voice Selection based on persona + language
-    voice_id = get_voice_id(persona_id, forced_language)
+    # Voice Selection
+    voice_id = get_voice_id(persona_id)
 
     tts = CartesiaTTS(
         api_key=os.environ["CARTESIA_API_KEY"],
         model="sonic-3",
         voice=voice_id,
-        sample_rate=48000 # Make the agent talk faster and more naturally
+        sample_rate=48000
     )
 
     session = AgentSession(
@@ -229,15 +170,13 @@ async def entrypoint(ctx: JobContext):
 
     @session.on("mcp_tool_call")
     def on_mcp_tool_call(tool_call):
-        logger.info(f"🛠️ [MCP TOOL] Calling tool: {tool_call.name} with args: {tool_call.arguments}")
+        logger.info(f"[MCP TOOL] Calling tool: {tool_call.name} with args: {tool_call.arguments}")
 
     @session.on("mcp_tools_listed")
     def on_mcp_tools_listed(tools):
-        logger.info(f"📋 [MCP TOOLS] Listed {len(tools)} tools from server")
-        for t in tools:
-            logger.info(f"   - {t.name}: {t.description[:50]}...")
+        logger.info(f"[MCP TOOLS] Listed {len(tools)} tools from server")
 
-    # Use IST (UTC+5:30) for filenames and logging
+    # Use IST for filenames
     ist_now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
     session_id = ist_now.strftime("%Y%m%d_%H%M%S")
     os.makedirs("sessions", exist_ok=True)
@@ -245,130 +184,92 @@ async def entrypoint(ctx: JobContext):
     transcript_file = f"{base_name}.txt"
     audio_file = f"{base_name}.wav"
 
-    agent = MyAgent(forced_language, participant.identity, ctx.room.name, transcript_file, is_outbound=is_outbound, persona_name=persona_name)
+    agent = MyAgent(forced_language, participant.identity, ctx.room.name, transcript_file, persona_name=persona_name)
     agent.voice_session = session
-    
+
     conversation_log: list[dict] = []
-    
-    # Audio Capture Logic (48kHz Mono - High-Fidelity Production Standard)
+
+    # Audio Capture (48kHz Mono)
     wav_out = wave.open(audio_file, "wb")
     wav_out.setnchannels(1)
     wav_out.setsampwidth(2)
     wav_out.setframerate(48000)
-    
+
     audio_tasks = []
     write_lock = asyncio.Lock()
     total_frames_written = 0
 
     async def record_track(track: rtc.Track):
         nonlocal total_frames_written
-        logger.info(f"Started recording track: {track.sid or 'local'} - Normalizing to 48kHz")
         audio_stream = rtc.AudioStream(track, sample_rate=48000, num_channels=1)
         try:
             async for event in audio_stream:
                 async with write_lock:
-                    # Write raw PCM data
                     wav_out.writeframes(event.frame.data.tobytes())
                     total_frames_written += 1
-                    if total_frames_written % 100 == 0:
-                        logger.info(f"Audio progressing: {total_frames_written//50} seconds saved...")
         except Exception as e:
-            logger.error(f"Error recording track {track.sid}: {e}")
-        finally:
-            logger.info(f"Stopped recording track: {track.sid or 'local'}")
+            logger.error(f"Error recording track: {e}")
 
     @ctx.room.on("track_subscribed")
     def on_track_subscribed(track: rtc.Track, publication: rtc.TrackPublication, participant: rtc.Participant):
         if track.kind == rtc.TrackKind.KIND_AUDIO:
             audio_tasks.append(asyncio.create_task(record_track(track)))
 
-    # Start recording any ALREADY subscribed tracks
     for p in ctx.room.remote_participants.values():
         for pub in p.track_publications.values():
             if pub.track and pub.track.kind == rtc.TrackKind.KIND_AUDIO:
                 audio_tasks.append(asyncio.create_task(record_track(pub.track)))
 
-    # Also record the AGENT'S own audio (local participant)
     async def record_local_audio():
-        # Wait for agent to publish track
-        while not any(pub.track is not None and pub.track.kind == rtc.TrackKind.KIND_AUDIO 
+        while not any(pub.track is not None and pub.track.kind == rtc.TrackKind.KIND_AUDIO
                       for pub in ctx.room.local_participant.track_publications.values()):
             await asyncio.sleep(0.1)
-        
         for pub in ctx.room.local_participant.track_publications.values():
             if pub.track and pub.track.kind == rtc.TrackKind.KIND_AUDIO:
-                logger.info("Found local audio track, adding to mixer")
                 audio_tasks.append(asyncio.create_task(record_track(pub.track)))
                 break
 
     audio_tasks.append(asyncio.create_task(record_local_audio()))
 
     def log_turn(role: str, text: str):
-        """Helper to write to log and transcript file."""
         if not text:
             return
-        label = "👤 User   " if role == "user" else "🤖 Agent  "
-        # Use IST for per-message timing
+        label = "User" if role == "user" else "Agent"
         ist_now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
-        ts    = ist_now.strftime("%H:%M:%S")
-        line  = f"[{ts}] {label}: {text}"
-
+        ts = ist_now.strftime("%H:%M:%S")
+        line = f"[{ts}] {label}: {text}"
         conversation_log.append({"role": role, "text": text, "time": ts})
         logger.info(line)
-
-        # Append to per-session transcript file
         with open(transcript_file, "a", encoding="utf-8") as f:
             f.write(line + "\n")
 
-    # Hook the logger into the agent for manual greeting logging
     agent.log_callback = log_turn
 
     def on_conversation_item_added(event: ConversationItemAddedEvent) -> None:
-        """Called for turns committed to chat history."""
         item = event.item
         if not hasattr(item, "role"):
             return
         log_turn(str(item.role), item.text_content)
 
     session.on("conversation_item_added", on_conversation_item_added)
-    logger.info(f"📝 Transcript will be saved to: {transcript_file}")
-    # ────────────────────────────────────────────────────────────────────────
 
     try:
         await session.start(agent=agent, room=ctx.room)
-        
-        # Keep the session alive until it's closed
         close_future = asyncio.Future()
         session.on("close", lambda _: close_future.set_result(None) if not close_future.done() else None)
         await close_future
     finally:
-        # Close audio file and tasks
-        logger.info(f"Finalizing audio recording: {audio_file}")
         for t in audio_tasks:
             t.cancel()
-        
-        # Ensure we wait for tasks to stop
         if audio_tasks:
             await asyncio.gather(*audio_tasks, return_exceptions=True)
-            
         wav_out.close()
 
-        # Check file size
         if os.path.exists(audio_file):
             size = os.path.getsize(audio_file)
-            logger.info(f"✅ RECORDING COMPLETE: {audio_file} ({size} bytes, {total_frames_written} frames)")
-        else:
-            logger.error(f"❌ RECORDING FAILED: {audio_file} not found")
+            logger.info(f"RECORDING COMPLETE: {audio_file} ({size} bytes)")
 
-        # Print full conversation summary on disconnect
         if conversation_log:
-            logger.info("\n" + "="*60)
-            logger.info(f"📋 FULL CONVERSATION SUMMARY")
-            logger.info("="*60)
-            for entry in conversation_log:
-                label = "👤 User   " if entry["role"] == "user" else "🤖 Agent  "
-                logger.info(f"[{entry['time']}] {label}: {entry['text']}")
-            logger.info("="*60)
             logger.info(f"Transcript saved to: {transcript_file}")
             logger.info(f"Audio recorded to: {audio_file}")
         await ctx.room.disconnect()

@@ -1,0 +1,185 @@
+[03/15/26 13:02:39] INFO     Use pytorch             SentenceTransformer.py:219
+                             device_name: cpu                                  
+                    INFO     Load pretrained         SentenceTransformer.py:227
+                             SentenceTransformer:                              
+                             l3cube-pune/indic-sente                           
+                             nce-similarity-sbert                              
+[03/15/26 13:02:48] INFO     KnowledgeBase initialised             server.py:72
+                             (backend=faiss)                                   
+                    INFO     Started server process [6696]         server.py:84
+                    INFO     Waiting for application startup.          on.py:48
+                    INFO     Application startup complete.             on.py:62
+                    INFO     Uvicorn running on                   server.py:216
+                             http://0.0.0.0:8005 (Press CTRL+C to              
+                             quit)                                             
+                    INFO     127.0.0.1:57557 - "GET / HTTP/1.1" h11_impl.py:480
+                             200                                               
+[03/15/26 13:03:47] INFO     127.0.0.1:54547 - "GET / HTTP/1.1" h11_impl.py:480
+                             200                                               
+                    INFO     127.0.0.1:54547 - "GET             h11_impl.py:480
+                             /assets/index-Brpnv4Mv.js                         
+                             HTTP/1.1" 304                                     
+                    INFO     127.0.0.1:58476 - "GET             h11_impl.py:480
+                             /assets/index-D2oVDWss.css                        
+                             HTTP/1.1" 304                                     
+                    INFO     127.0.0.1:58476 - "GET             h11_impl.py:480
+                             /api/personas HTTP/1.1" 200                       
+[03/15/26 13:03:53] INFO     Active persona set to: priya         server.py:405
+                    INFO     127.0.0.1:61673 - "POST            h11_impl.py:480
+                             /api/set-persona HTTP/1.1" 200                    
+[03/15/26 13:03:55] INFO     127.0.0.1:61673 - "GET             h11_impl.py:480
+                             /token?persona=priya HTTP/1.1" 200                
+[03/15/26 13:03:58] INFO     127.0.0.1:54580 - "GET /mcp/sse    h11_impl.py:480
+                             HTTP/1.1" 200                                     
+                    INFO     127.0.0.1:54581 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=a05ac16c                
+                             4b3245ddaaccb6f9f7297bd2 HTTP/1.1"                
+                             202                                               
+                    INFO     127.0.0.1:54581 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=a05ac16c                
+                             4b3245ddaaccb6f9f7297bd2 HTTP/1.1"                
+                             202                                               
+                    INFO     127.0.0.1:54581 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=a05ac16c                
+                             4b3245ddaaccb6f9f7297bd2 HTTP/1.1"                
+                             202                                               
+                    INFO     Processing request of type           server.py:720
+                             ListToolsRequest                                  
+[03/15/26 13:04:13] INFO     Active persona set to: arjun         server.py:405
+                    INFO     127.0.0.1:58429 - "POST            h11_impl.py:480
+                             /api/set-persona HTTP/1.1" 200                    
+                    INFO     127.0.0.1:58429 - "GET             h11_impl.py:480
+                             /token?persona=arjun HTTP/1.1" 200                
+[03/15/26 13:07:46] INFO     127.0.0.1:62533 - "GET / HTTP/1.1" h11_impl.py:480
+                             200                                               
+                    INFO     127.0.0.1:62533 - "GET             h11_impl.py:480
+                             /assets/index-Brpnv4Mv.js                         
+                             HTTP/1.1" 304                                     
+                    INFO     127.0.0.1:64047 - "GET             h11_impl.py:480
+                             /assets/index-D2oVDWss.css                        
+                             HTTP/1.1" 304                                     
+[03/15/26 13:07:47] INFO     127.0.0.1:64047 - "GET             h11_impl.py:480
+                             /api/personas HTTP/1.1" 200                       
+[03/15/26 13:07:52] INFO     127.0.0.1:64059 - "GET             h11_impl.py:480
+                             /token?persona=arjun HTTP/1.1" 200                
+[03/15/26 13:07:55] INFO     127.0.0.1:60643 - "GET /mcp/sse    h11_impl.py:480
+                             HTTP/1.1" 200                                     
+                    INFO     127.0.0.1:63820 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=b6b09abf                
+                             0f554e888ece1a4e5bd5bbbd HTTP/1.1"                
+                             202                                               
+                    INFO     127.0.0.1:63820 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=b6b09abf                
+                             0f554e888ece1a4e5bd5bbbd HTTP/1.1"                
+                             202                                               
+                    INFO     127.0.0.1:63820 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=b6b09abf                
+                             0f554e888ece1a4e5bd5bbbd HTTP/1.1"                
+                             202                                               
+                    INFO     Processing request of type           server.py:720
+                             ListToolsRequest                                  
+[03/15/26 13:08:44] INFO     [FAISS] RAG search: 'can you book me server.py:151
+                             an appointment?' source_name=None                 
+                    WARNING  FAISS index is empty                 server.py:156
+                    INFO     AFC is enabled with max remote      models.py:5222
+                             calls: 10.                                        
+[03/15/26 13:08:46] INFO     HTTP Request: POST                 _client.py:1025
+                             https://generativelanguage.googlea                
+                             pis.com/v1beta/models/gemini-2.5-f                
+                             lash:generateContent "HTTP/1.1 200                
+                             OK"                                               
+                    INFO     127.0.0.1:50097 - "POST /api/chat  h11_impl.py:480
+                             HTTP/1.1" 200                                     
+[03/15/26 13:08:56] INFO     Active persona set to: maya          server.py:405
+                    INFO     127.0.0.1:63156 - "POST            h11_impl.py:480
+                             /api/set-persona HTTP/1.1" 200                    
+[03/15/26 13:08:58] INFO     127.0.0.1:63156 - "GET             h11_impl.py:480
+                             /token?persona=maya HTTP/1.1" 200                 
+[03/15/26 13:09:01] INFO     127.0.0.1:54726 - "GET /mcp/sse    h11_impl.py:480
+                             HTTP/1.1" 200                                     
+                    INFO     127.0.0.1:54727 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=0bcc2539                
+                             62994fff9d57cc24d0c5ad5b HTTP/1.1"                
+                             202                                               
+                    INFO     127.0.0.1:54727 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=0bcc2539                
+                             62994fff9d57cc24d0c5ad5b HTTP/1.1"                
+                             202                                               
+                    INFO     127.0.0.1:54727 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=0bcc2539                
+                             62994fff9d57cc24d0c5ad5b HTTP/1.1"                
+                             202                                               
+                    INFO     Processing request of type           server.py:720
+                             ListToolsRequest                                  
+[03/15/26 13:09:18] INFO     127.0.0.1:52149 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=0bcc2539                
+                             62994fff9d57cc24d0c5ad5b HTTP/1.1"                
+                             202                                               
+                    INFO     Processing request of type           server.py:720
+                             CallToolRequest                                   
+                    INFO     file_cache is only supported with   __init__.py:49
+                             oauth2client<4.0.0                                
+                    INFO     \u2705 Google Calendar service   google_calendar.py:88
+                             initialized successfully                          
+                             (Calendar ID:                                     
+                             c3709915138b1a89c2c8c76a09a2                      
+                             68feb1bb8b0160e142250c58a585                      
+                             e925d564@group.calendar.goog                      
+                             le.com)                                           
+                    INFO     \u2699\ufe0f AvailabilityChecker   availability_checker.py:70
+                             initialized with 330                              
+                             min offset                                        
+[03/15/26 13:09:21] ERROR    \u274c HTTP error listing       google_calendar.py:354
+                             events: <HttpError 404 when                       
+                             requesting                                        
+                             https://www.googleapis.com/                       
+                             calendar/v3/calendars/c3709                       
+                             915138b1a89c2c8c76a09a268fe                       
+                             b1bb8b0160e142250c58a585e92                       
+                             5d564%40group.calendar.goog                       
+                             le.com/events?timeMin=2026-                       
+                             03-15T18%3A30%3A00Z&timeMax                       
+                             =2026-03-16T18%3A29%3A59Z&m                       
+                             axResults=250&singleEvents=                       
+                             true&orderBy=startTime&alt=                       
+                             json returned "Not Found".                        
+                             Details: "[{'domain':                             
+                             'global', 'reason':                               
+                             'notFound', 'message': 'Not                       
+                             Found'}]">                                        
+                    INFO     \U0001f4cb Generating slots    availability_checker.py:169
+                             for 2026-03-16 (Local                             
+                             IST) | Booked count: 0                            
+                    INFO     \u2705 Generated 16        availability_checker.py:231
+                             available slots for                               
+                             2026-03-16                                        
+[03/15/26 13:09:32] INFO     127.0.0.1:56290 - "POST            h11_impl.py:480
+                             /mcp/messages/?session_id=0bcc2539                
+                             62994fff9d57cc24d0c5ad5b HTTP/1.1"                
+                             202                                               
+                    INFO     Processing request of type           server.py:720
+                             CallToolRequest                                   
+[03/15/26 13:09:33] ERROR    \u274c HTTP error listing       google_calendar.py:354
+                             events: <HttpError 404 when                       
+                             requesting                                        
+                             https://www.googleapis.com/                       
+                             calendar/v3/calendars/c3709                       
+                             915138b1a89c2c8c76a09a268fe                       
+                             b1bb8b0160e142250c58a585e92                       
+                             5d564%40group.calendar.goog                       
+                             le.com/events?timeMin=2026-                       
+                             03-15T18%3A30%3A00Z&timeMax                       
+                             =2026-03-16T18%3A29%3A59Z&m                       
+                             axResults=250&singleEvents=                       
+                             true&orderBy=startTime&alt=                       
+                             json returned "Not Found".                        
+                             Details: "[{'domain':                             
+                             'global', 'reason':                               
+                             'notFound', 'message': 'Not                       
+                             Found'}]">                                        
+                    INFO     \U0001f4cb Generating slots    availability_checker.py:169
+                             for 2026-03-16 (Local                             
+                             IST) | Booked count: 0                            
+                    INFO     \u2705 Generated 16        availability_checker.py:231
+                             available slots for                               
+                             2026-03-16                                        

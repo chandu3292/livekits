@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /c/Users/karri/OneDrive/Desktop/projects/livekits/*.py /c/Users/karri/OneDrive/Desktop/projects/livekits/*.json 2>/dev/null | head -30)",
+      "Bash(cd \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\frontend\" && npm run build 2>&1)",
+      "Bash(where tesseract:*)",
+      "Read(//c/Program Files/Tesseract-OCR/**)",
+      "Read(//c/Program Files \\(x86\\)/Tesseract-OCR/**)",
+      "Bash(cd \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\" && rm -f \\\\\n  \"1\" \\\\\n  \"all_services.log\" \\\\\n  \"app.log\" \\\\\n  \"nohup.out\" \\\\\n  \"client_secret_78353343793-nmgdajpn34cm15laieb2tm3a7k1funne.apps.googleusercontent.com.json\" \\\\\n  \"key.json\" \\\\\n  \"dispatch-rule.json\" \\\\\n  \"sip-config.yaml\" \\\\\n  \"provision_sip.py\" \\\\\n  \"calendar_integration/calendar.json\")",
+      "Bash(cd \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\" && rm -rf \\\\\n  \"outbound_calls\" \\\\\n  \"sessions\" \\\\\n  \"handoffs.json\" \\\\\n  \"mcp-agent.py\" \\\\\n  \"run_all.sh\" \\\\\n  \"livekit-server.exe\" \\\\\n  \"livekit.yaml\" \\\\\n  \"api\")",
+      "Bash(cd \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\" && rm -rf outbound_calls run_all.sh)",
+      "Bash(cd \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\" && python -c \"\nfrom ocr import process_file\nfrom agent_personas import list_personas, DEFAULT_PERSONA_ID\nfrom calendar_integration import get_appointment_manager\nprint\\('All imports OK'\\)\nprint\\('Files remaining:'\\)\nimport os\nfor f in sorted\\(os.listdir\\('.'\\)\\):\n    if f.startswith\\('.'\\) or f == '__pycache__':\n        continue\n    print\\(f'  {f}'\\)\n\")",
+      "Bash(where livekit-server:*)",
+      "Bash(chmod +x \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\start.sh\")",
+      "Bash(cmd.exe //c \"start.bat start\" 2>&1)",
+      "Bash(cmd.exe //c \"cd /d C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits && start.bat start\" 2>&1)",
+      "Bash(cmd.exe //c \"cd /d C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits && call start.bat start\" 2>&1)",
+      "Bash(cmd.exe //c \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\start.bat start\" 2>&1)",
+      "Bash(cmd.exe //c \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\start.bat restart\" 2>&1)",
+      "Bash(cmd.exe //c \"C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\start.bat stop\" 2>&1)",
+      "Bash(cmd.exe //c \"netstat -aon | findstr :8005\" 2>&1)",
+      "Bash(cmd.exe //c \"taskkill /F /PID 20588\" 2>&1)",
+      "Bash(cd /c/Users/karri/OneDrive/Desktop/projects/livekits/frontend && npm run build 2>&1)",
+      "Bash(npm run:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.cartesia.ai)",
+      "WebFetch(domain:cartesia.ai)",
+      "Bash(source /c/Users/karri/OneDrive/Desktop/projects/livekits/.env 2>/dev/null; curl -s \"https://api.cartesia.ai/voices\" -H \"X-API-Key: $CARTESIA_API_KEY\" -H \"Cartesia-Version: 2024-06-10\" 2>&1 | python -c \"\nimport sys, json\ndata = json.load\\(sys.stdin\\)\nif isinstance\\(data, list\\):\n    for v in data:\n        lang = v.get\\('language',''\\)\n        name = v.get\\('name',''\\)\n        vid = v.get\\('id',''\\)\n        desc = v.get\\('description',''\\)[:60] if v.get\\('description'\\) else ''\n        print\\(f'{name:25s} | {lang:5s} | {vid} | {desc}'\\)\nelif isinstance\\(data, dict\\):\n    print\\(json.dumps\\(data, indent=2\\)[:2000]\\)\n\" 2>&1 | head -80)",
+      "Bash(source /c/Users/karri/OneDrive/Desktop/projects/livekits/.env 2>/dev/null; curl -s \"https://api.cartesia.ai/voices\" -H \"X-API-Key: $CARTESIA_API_KEY\" -H \"Cartesia-Version: 2024-06-10\" 2>&1 | python -c \"\nimport sys, json\ndata = json.load\\(sys.stdin\\)\nfor v in sorted\\(data, key=lambda x: x.get\\('language',''\\)\\):\n    lang = v.get\\('language',''\\)\n    if lang in \\('hi','te','en'\\):\n        name = v.get\\('name',''\\)\n        vid = v.get\\('id',''\\)\n        desc = v.get\\('description',''\\)[:80] if v.get\\('description'\\) else ''\n        # Check for Indian accent in English voices\n        if lang == 'en' and 'indian' not in \\(desc+name\\).lower\\(\\) and 'india' not in \\(desc+name\\).lower\\(\\):\n            continue\n        print\\(f'{lang:4s} | {name:35s} | {vid} | {desc}'\\)\n\" 2>&1)",
+      "Bash(curl -s http://localhost:8005/api/personas 2>&1)",
+      "Bash(cmd.exe //c \"netstat -aon | findstr :8005.*LISTENING\" 2>&1)",
+      "Bash(cmd.exe //c \"taskkill /F /PID 19796\" 2>&1)",
+      "Bash(cmd.exe //c \"netstat -aon | findstr :8081.*LISTENING\" 2>&1)",
+      "Bash(cmd.exe //c \"taskkill /F /PID 10192 && taskkill /FI \\\\\"WINDOWTITLE eq mcp-agent\\\\\" /F\" 2>&1)",
+      "Bash(curl -s \"http://localhost:8005/token?persona=priya\" 2>&1 | python -c \"\nimport sys, json, base64\ndata = json.load\\(sys.stdin\\)\ntoken = data['token']\n# JWT payload is the second part\npayload = token.split\\('.'\\)[1]\n# Add padding\npayload += '=' * \\(4 - len\\(payload\\) % 4\\)\ndecoded = json.loads\\(base64.b64decode\\(payload\\)\\)\nprint\\(json.dumps\\(decoded, indent=2\\)\\)\n\")",
+      "Bash(cmd.exe //c \"tasklist | findstr python\" 2>&1)",
+      "Bash(cmd.exe //c \"taskkill /F /PID 15976 & taskkill /F /PID 3212\" 2>&1)",
+      "Bash(cmd.exe //c \"taskkill /F /PID 11708\" 2>&1 && cmd.exe //c \"start \\\\\"mcp-agent\\\\\" /B cmd /c \\\\\"python C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\mcp-agent.py start > C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\logs\\\\agent.log 2>&1\\\\\"\" 2>&1)",
+      "Bash(cmd.exe //c \"cd /d C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits && start /B cmd /c \\\\\"python mcp-agent.py start > logs\\\\agent.log 2>&1\\\\\"\" 2>&1)"
+    ]
+  }
+}

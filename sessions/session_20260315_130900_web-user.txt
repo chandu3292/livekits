@@ -1,0 +1,23 @@
+[13:09:06] Agent: Welcome to DocQuery. I'm Maya. How can I help you today?
+[13:09:10] User: Can you book me an appointment?
+[13:09:15] Agent: I can help with that. What day are you looking to book an appointment for?
+
+[13:09:17] User: Tomorrow?
+[13:09:32] Agent: Let me
+[13:09:32] User: Hello?
+[13:09:42] Agent: Let
+[13:09:42] User: Hello?
+[13:09:48] Agent: Let me check the availability for you.
+[13:10:00] User: Okay.
+[13:10:21] Agent: I have slots available tomorrow at 9:00 AM, 9:30 AM, 10:00 AM, 10:30 AM, 11:00 AM, 11:30 AM, 12:00 PM, 12:30 PM, 1:00 PM, and 1:30 PM. Which of these times work for you?
+[13:10:21] User: I
+[13:10:26] Agent: Please tell me which of the available times you'd like to book your appointment for.
+[13:10:29] User: The name the name slot.
+[13:10:35] Agent: Sorry, I didn't quite get that. Could you please tell me which of the available times you'd like to book your appointment for?
+[13:10:38] User: AM slot.
+[13:10:50] Agent: I can see you are asking about the "AM slot". To finalize your booking, I need you to choose a specific time, such as 9:00 AM, 9:30
+[13:10:50] User: Nine thirty.
+[13:10:54] Agent: And to what name and email address should I book this appointment?
+[13:10:58] User: Chandu chandu at g mail dot com.
+[13:11:19] User: Hello?
+[13:11:29] Agent: Hello! Your appointment is confirmed for Monday, March 16, 2026, at 9:30 AM IST. It has been added to your Google Calendar.

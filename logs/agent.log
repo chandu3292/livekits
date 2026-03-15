@@ -1,0 +1,223 @@
+INFO:livekit.agents:starting worker
+{"message": "starting worker", "level": "INFO", "name": "livekit.agents", "version": "1.4.3", "rtc-version": "1.1.2", "timestamp": "2026-03-15T07:37:09.053054+00:00"}
+INFO:livekit.agents:HTTP server listening on :8081
+{"message": "HTTP server listening on :8081", "level": "INFO", "name": "livekit.agents", "timestamp": "2026-03-15T07:37:09.053054+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 24632, "timestamp": "2026-03-15T07:37:09.057130+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 25216, "timestamp": "2026-03-15T07:37:09.057130+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 21972, "timestamp": "2026-03-15T07:37:09.057130+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 3104, "timestamp": "2026-03-15T07:37:09.057130+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 24632, "elapsed_time": 0.0, "timestamp": "2026-03-15T07:37:09.062470+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 25216, "elapsed_time": 0.0, "timestamp": "2026-03-15T07:37:09.062470+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 21972, "elapsed_time": 0.0, "timestamp": "2026-03-15T07:37:09.062470+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 3104, "elapsed_time": 0.0, "timestamp": "2026-03-15T07:37:09.062470+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 13328, "timestamp": "2026-03-15T07:37:09.066884+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 24672, "timestamp": "2026-03-15T07:37:09.066884+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 18448, "timestamp": "2026-03-15T07:37:09.070753+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 16848, "timestamp": "2026-03-15T07:37:09.070753+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 13328, "elapsed_time": 0.01, "timestamp": "2026-03-15T07:37:09.074673+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 24672, "elapsed_time": 0.01, "timestamp": "2026-03-15T07:37:09.075674+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 18448, "elapsed_time": 0.01, "timestamp": "2026-03-15T07:37:09.075674+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 16848, "elapsed_time": 0.0, "timestamp": "2026-03-15T07:37:09.075674+00:00"}
+INFO:livekit.agents:registered worker
+{"message": "registered worker", "level": "INFO", "name": "livekit.agents", "agent_name": "", "id": "AW_xDTEEN7z8GTR", "url": "ws://localhost:7880", "region": "", "protocol": 16, "timestamp": "2026-03-15T07:37:09.104088+00:00"}
+INFO:livekit.agents:worker is at full capacity, marking as unavailable
+{"message": "worker is at full capacity, marking as unavailable", "level": "INFO", "name": "livekit.agents", "load": 0.7018000000000002, "threshold": 0.7, "timestamp": "2026-03-15T07:37:34.124288+00:00"}
+INFO:livekit.agents:worker is below capacity, marking as available
+{"message": "worker is below capacity, marking as available", "level": "INFO", "name": "livekit.agents", "load": 0.4102, "threshold": 0.7, "timestamp": "2026-03-15T07:37:36.641924+00:00"}
+INFO:livekit.agents:received job request
+{"message": "received job request", "level": "INFO", "name": "livekit.agents", "job_id": "AJ_2ApeUfxNzpNv", "dispatch_id": "AD_QvpCkzEbhW6y", "room": "default", "room_id": "RM_8TCxqxcC6ZkP", "agent_name": "", "resuming": false, "enable_recording": false, "timestamp": "2026-03-15T07:37:52.534243+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 25744, "timestamp": "2026-03-15T07:37:52.622491+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 25744, "elapsed_time": 0.0, "timestamp": "2026-03-15T07:37:52.625002+00:00"}
+INFO:mcp-agent:Participant joined: web-user
+{"message": "Participant joined: web-user", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:37:52.813401+00:00"}
+INFO:mcp-agent:Using persona: Arjun (arjun), language: hi
+{"message": "Using persona: Arjun (arjun), language: hi", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:37:52.813401+00:00"}
+INFO:mcp-agent:Agent on_enter called. Language: hi
+{"message": "Agent on_enter called. Language: hi", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:37:55.986378+00:00"}
+INFO:mcp-agent:[13:08:01] Agent: DocQuery में आपका स्वागत है। मैं Arjun हूँ। आज मैं आपकी कैसे मदद कर सकती हूँ?
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\logging\__init__.py", line 1113, in emit
+    stream.write(msg + self.terminator)
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 40-42: character maps to <undefined>
+Call stack:
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1002, in _bootstrap
+    self._bootstrap_inner()
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1045, in _bootstrap_inner
+    self.run()
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 982, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\ipc\job_proc_lazy_main.py", line 418, in thread_main
+    client.run()
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\ipc\proc_client.py", line 70, in run
+    loop.run_until_complete(self._task)
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 640, in run_until_complete
+    self.run_forever()
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\asyncio\windows_events.py", line 321, in run_forever
+    super().run_forever()
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 607, in run_forever
+    self._run_once()
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\asyncio\base_events.py", line 1922, in _run_once
+    handle._run()
+  File "C:\Users\karri\AppData\Local\Programs\Python\Python311\Lib\asyncio\events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 432, in _context_aware_coro
+    return await coro
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\opentelemetry\util\_decorator.py", line 71, in async_wrapper
+    return await func(*args, **kwargs)  # type: ignore
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\voice\agent_activity.py", line 498, in _traceable_on_enter
+    await self._agent.on_enter()
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\mcp-agent.py", line 109, in on_enter
+    self.log_callback("assistant", greeting)
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\mcp-agent.py", line 242, in log_turn
+    logger.info(line)
+Message: '[13:08:01] Agent: DocQuery \u092e\u0947\u0902 \u0906\u092a\u0915\u093e \u0938\u094d\u0935\u093e\u0917\u0924 \u0939\u0948\u0964 \u092e\u0948\u0902 Arjun \u0939\u0942\u0901\u0964 \u0906\u091c \u092e\u0948\u0902 \u0906\u092a\u0915\u0940 \u0915\u0948\u0938\u0947 \u092e\u0926\u0926 \u0915\u0930 \u0938\u0915\u0924\u0940 \u0939\u0942\u0901?'
+Arguments: ()
+INFO:livekit.agents:closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`)
+{"message": "closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`)", "level": "INFO", "name": "livekit.agents", "room": "default", "participant": "web-user", "reason": "CLIENT_INITIATED", "timestamp": "2026-03-15T07:38:03.514992+00:00"}
+INFO:mcp-agent:RECORDING COMPLETE: sessions/session_20260315_130755_web-user.wav (1680044 bytes)
+{"message": "RECORDING COMPLETE: sessions/session_20260315_130755_web-user.wav (1680044 bytes)", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:38:05.511436+00:00"}
+INFO:mcp-agent:Transcript saved to: sessions/session_20260315_130755_web-user.txt
+{"message": "Transcript saved to: sessions/session_20260315_130755_web-user.txt", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:38:05.511436+00:00"}
+INFO:mcp-agent:Audio recorded to: sessions/session_20260315_130755_web-user.wav
+{"message": "Audio recorded to: sessions/session_20260315_130755_web-user.wav", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:38:05.511436+00:00"}
+INFO:livekit.agents:worker is at full capacity, marking as unavailable
+{"message": "worker is at full capacity, marking as unavailable", "level": "INFO", "name": "livekit.agents", "load": 0.7769999999999999, "threshold": 0.7, "timestamp": "2026-03-15T07:38:31.663903+00:00"}
+INFO:livekit.agents:worker is below capacity, marking as available
+{"message": "worker is below capacity, marking as available", "level": "INFO", "name": "livekit.agents", "load": 0.43699999999999994, "threshold": 0.7, "timestamp": "2026-03-15T07:38:34.164239+00:00"}
+INFO:livekit.agents:received job request
+{"message": "received job request", "level": "INFO", "name": "livekit.agents", "job_id": "AJ_dCJCQPTS2KBp", "dispatch_id": "AD_fBxbWL2AGTtZ", "room": "default", "room_id": "RM_C3jT9EsSxw5x", "agent_name": "", "resuming": false, "enable_recording": false, "timestamp": "2026-03-15T07:38:58.424228+00:00"}
+INFO:livekit.agents:initializing job runner
+{"message": "initializing job runner", "level": "INFO", "name": "livekit.agents", "tid": 25860, "timestamp": "2026-03-15T07:38:58.471221+00:00"}
+INFO:livekit.agents:job runner initialized
+{"message": "job runner initialized", "level": "INFO", "name": "livekit.agents", "tid": 25860, "elapsed_time": 0.0, "timestamp": "2026-03-15T07:38:58.473042+00:00"}
+INFO:mcp-agent:Participant joined: web-user
+{"message": "Participant joined: web-user", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:38:58.511016+00:00"}
+INFO:mcp-agent:Using persona: Maya (maya), language: en
+{"message": "Using persona: Maya (maya), language: en", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:38:58.513293+00:00"}
+INFO:mcp-agent:Agent on_enter called. Language: en
+{"message": "Agent on_enter called. Language: en", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:01.312353+00:00"}
+INFO:mcp-agent:[13:09:06] Agent: Welcome to DocQuery. I'm Maya. How can I help you today?
+{"message": "[13:09:06] Agent: Welcome to DocQuery. I'm Maya. How can I help you today?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:06.207195+00:00"}
+INFO:mcp-agent:[13:09:10] User: Can you book me an appointment?
+{"message": "[13:09:10] User: Can you book me an appointment?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:10.208555+00:00"}
+INFO:mcp-agent:[13:09:15] Agent: I can help with that. What day are you looking to book an appointment for?
+
+{"message": "[13:09:15] Agent: I can help with that. What day are you looking to book an appointment for?\n", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:15.039567+00:00"}
+INFO:mcp-agent:[13:09:17] User: Tomorrow?
+{"message": "[13:09:17] User: Tomorrow?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:17.663315+00:00"}
+INFO:mcp-agent:[13:09:32] Agent: Let me
+{"message": "[13:09:32] Agent: Let me", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:32.134064+00:00"}
+INFO:mcp-agent:[13:09:32] User: Hello?
+{"message": "[13:09:32] User: Hello?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:32.282171+00:00"}
+INFO:mcp-agent:[13:09:42] Agent: Let
+{"message": "[13:09:42] Agent: Let", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:42.236778+00:00"}
+INFO:mcp-agent:[13:09:42] User: Hello?
+{"message": "[13:09:42] User: Hello?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:42.264723+00:00"}
+INFO:mcp-agent:[13:09:48] Agent: Let me check the availability for you.
+{"message": "[13:09:48] Agent: Let me check the availability for you.", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:39:48.601796+00:00"}
+INFO:mcp-agent:[13:10:00] User: Okay.
+{"message": "[13:10:00] User: Okay.", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:00.082564+00:00"}
+INFO:mcp-agent:[13:10:21] Agent: I have slots available tomorrow at 9:00 AM, 9:30 AM, 10:00 AM, 10:30 AM, 11:00 AM, 11:30 AM, 12:00 PM, 12:30 PM, 1:00 PM, and 1:30 PM. Which of these times work for you?
+{"message": "[13:10:21] Agent: I have slots available tomorrow at 9:00 AM, 9:30 AM, 10:00 AM, 10:30 AM, 11:00 AM, 11:30 AM, 12:00 PM, 12:30 PM, 1:00 PM, and 1:30 PM. Which of these times work for you?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:21.130943+00:00"}
+INFO:mcp-agent:[13:10:21] User: I
+{"message": "[13:10:21] User: I", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:21.370730+00:00"}
+INFO:mcp-agent:[13:10:26] Agent: Please tell me which of the available times you'd like to book your appointment for.
+{"message": "[13:10:26] Agent: Please tell me which of the available times you'd like to book your appointment for.", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:26.120905+00:00"}
+INFO:mcp-agent:[13:10:29] User: The name the name slot.
+{"message": "[13:10:29] User: The name the name slot.", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:29.350095+00:00"}
+INFO:mcp-agent:[13:10:35] Agent: Sorry, I didn't quite get that. Could you please tell me which of the available times you'd like to book your appointment for?
+{"message": "[13:10:35] Agent: Sorry, I didn't quite get that. Could you please tell me which of the available times you'd like to book your appointment for?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:35.712014+00:00"}
+INFO:mcp-agent:[13:10:38] User: AM slot.
+{"message": "[13:10:38] User: AM slot.", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:38.144289+00:00"}
+INFO:mcp-agent:[13:10:50] Agent: I can see you are asking about the "AM slot". To finalize your booking, I need you to choose a specific time, such as 9:00 AM, 9:30
+{"message": "[13:10:50] Agent: I can see you are asking about the \"AM slot\". To finalize your booking, I need you to choose a specific time, such as 9:00 AM, 9:30", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:50.090575+00:00"}
+INFO:mcp-agent:[13:10:50] User: Nine thirty.
+{"message": "[13:10:50] User: Nine thirty.", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:50.110604+00:00"}
+INFO:mcp-agent:[13:10:54] Agent: And to what name and email address should I book this appointment?
+{"message": "[13:10:54] Agent: And to what name and email address should I book this appointment?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:54.230971+00:00"}
+INFO:mcp-agent:[13:10:58] User: Chandu chandu at g mail dot com.
+{"message": "[13:10:58] User: Chandu chandu at g mail dot com.", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:40:58.500365+00:00"}
+WARNING:livekit.agents:failed to generate LLM completion: gemini llm: error generating content no response generated, retrying in 0.1s
+{"message": "failed to generate LLM completion: gemini llm: error generating content no response generated, retrying in 0.1s", "level": "WARNING", "name": "livekit.agents", "llm": "livekit.plugins.google.llm.LLM", "attempt": 1, "timestamp": "2026-03-15T07:41:01.132945+00:00"}
+WARNING:livekit.agents:failed to generate LLM completion: gemini llm: error generating content no response generated, retrying in 2.0s
+{"message": "failed to generate LLM completion: gemini llm: error generating content no response generated, retrying in 2.0s", "level": "WARNING", "name": "livekit.agents", "llm": "livekit.plugins.google.llm.LLM", "attempt": 2, "timestamp": "2026-03-15T07:41:01.898155+00:00"}
+WARNING:livekit.agents:failed to generate LLM completion: gemini llm: error generating content no response generated, retrying in 2.0s
+{"message": "failed to generate LLM completion: gemini llm: error generating content no response generated, retrying in 2.0s", "level": "WARNING", "name": "livekit.agents", "llm": "livekit.plugins.google.llm.LLM", "attempt": 3, "timestamp": "2026-03-15T07:41:04.547151+00:00"}
+ERROR:livekit.agents:Error in _llm_inference_task
+Traceback (most recent call last):
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\plugins\google\llm.py", line 505, in _run
+    raise APIStatusError(
+livekit.agents._exceptions.APIStatusError: no response generated
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\llm\llm.py", line 213, in _main_task
+    return await self._run()
+           ^^^^^^^^^^^^^^^^^
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\plugins\google\llm.py", line 537, in _run
+    raise APIConnectionError(
+livekit.agents._exceptions.APIConnectionError: gemini llm: error generating content no response generated
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\utils\log.py", line 17, in async_fn_logs
+    return await fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\opentelemetry\util\_decorator.py", line 71, in async_wrapper
+    return await func(*args, **kwargs)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\voice\generation.py", line 136, in _llm_inference_task
+    async for chunk in llm_node:
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\voice\agent.py", line 423, in llm_node
+    async for chunk in stream:
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\llm\llm.py", line 372, in __anext__
+    raise exc  # noqa: B904
+    ^^^^^^^^^
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\llm\llm.py", line 188, in _traceable_main_task
+    await self._main_task()
+  File "C:\Users\karri\OneDrive\Desktop\projects\livekits\.venv\Lib\site-packages\livekit\agents\llm\llm.py", line 229, in _main_task
+    raise APIConnectionError(
+livekit.agents._exceptions.APIConnectionError: failed to generate LLM completion after 4 attempts
+{"message": "Error in _llm_inference_task", "level": "ERROR", "name": "livekit.agents", "exc_info": "Traceback (most recent call last):\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\plugins\\google\\llm.py\", line 505, in _run\n    raise APIStatusError(\nlivekit.agents._exceptions.APIStatusError: no response generated\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\agents\\llm\\llm.py\", line 213, in _main_task\n    return await self._run()\n           ^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\plugins\\google\\llm.py\", line 537, in _run\n    raise APIConnectionError(\nlivekit.agents._exceptions.APIConnectionError: gemini llm: error generating content no response generated\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\agents\\utils\\log.py\", line 17, in async_fn_logs\n    return await fn(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\opentelemetry\\util\\_decorator.py\", line 71, in async_wrapper\n    return await func(*args, **kwargs)  # type: ignore\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\agents\\voice\\generation.py\", line 136, in _llm_inference_task\n    async for chunk in llm_node:\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\agents\\voice\\agent.py\", line 423, in llm_node\n    async for chunk in stream:\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\agents\\llm\\llm.py\", line 372, in __anext__\n    raise exc  # noqa: B904\n    ^^^^^^^^^\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\agents\\llm\\llm.py\", line 188, in _traceable_main_task\n    await self._main_task()\n  File \"C:\\Users\\karri\\OneDrive\\Desktop\\projects\\livekits\\.venv\\Lib\\site-packages\\livekit\\agents\\llm\\llm.py\", line 229, in _main_task\n    raise APIConnectionError(\nlivekit.agents._exceptions.APIConnectionError: failed to generate LLM completion after 4 attempts", "timestamp": "2026-03-15T07:41:07.416107+00:00"}
+INFO:mcp-agent:[13:11:19] User: Hello?
+{"message": "[13:11:19] User: Hello?", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:41:19.997433+00:00"}
+INFO:mcp-agent:[13:11:29] Agent: Hello! Your appointment is confirmed for Monday, March 16, 2026, at 9:30 AM IST. It has been added to your Google Calendar.
+{"message": "[13:11:29] Agent: Hello! Your appointment is confirmed for Monday, March 16, 2026, at 9:30 AM IST. It has been added to your Google Calendar.", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:41:29.211846+00:00"}
+INFO:livekit.agents:closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`)
+{"message": "closing agent session due to participant disconnect (disable via `RoomInputOptions.close_on_disconnect=False`)", "level": "INFO", "name": "livekit.agents", "room": "default", "participant": "web-user", "reason": "CLIENT_INITIATED", "timestamp": "2026-03-15T07:41:33.014369+00:00"}
+INFO:mcp-agent:RECORDING COMPLETE: sessions/session_20260315_130900_web-user.wav (29204204 bytes)
+{"message": "RECORDING COMPLETE: sessions/session_20260315_130900_web-user.wav (29204204 bytes)", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:41:35.017047+00:00"}
+INFO:mcp-agent:Transcript saved to: sessions/session_20260315_130900_web-user.txt
+{"message": "Transcript saved to: sessions/session_20260315_130900_web-user.txt", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:41:35.017047+00:00"}
+INFO:mcp-agent:Audio recorded to: sessions/session_20260315_130900_web-user.wav
+{"message": "Audio recorded to: sessions/session_20260315_130900_web-user.wav", "level": "INFO", "name": "mcp-agent", "timestamp": "2026-03-15T07:41:35.017047+00:00"}
+INFO:livekit.agents:worker is at full capacity, marking as unavailable
+{"message": "worker is at full capacity, marking as unavailable", "level": "INFO", "name": "livekit.agents", "load": 0.8004000000000001, "threshold": 0.7, "timestamp": "2026-03-15T07:41:44.360672+00:00"}
+INFO:livekit.agents:worker is below capacity, marking as available
+{"message": "worker is below capacity, marking as available", "level": "INFO", "name": "livekit.agents", "load": 0.5690000000000001, "threshold": 0.7, "timestamp": "2026-03-15T07:41:46.867940+00:00"}
