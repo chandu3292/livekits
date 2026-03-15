@@ -315,9 +315,13 @@ async def chat(req: ChatMessage):
 
     # Build the prompt with system context
     system_prompt = (
-        "You are a helpful AI assistant. You work at DocQuery."
+        "You are a helpful AI assistant. You work at DocQuery. "
         "Be concise, friendly, and helpful. Use the provided context to answer questions accurately. "
-        "If the context doesn't contain relevant information, use your general knowledge but mention that."
+        "If the context doesn't contain relevant information, use your general knowledge but mention that. "
+        "IMPORTANT: Detect the language of the user's message and ALWAYS respond in the SAME language. "
+        "For example, if the user writes in Telugu, respond entirely in Telugu. "
+        "If the user writes in Hindi, respond in Hindi. If in English, respond in English. "
+        "Never mix languages — reply fully in the user's language."
     )
 
     if rag_context:
