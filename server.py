@@ -196,14 +196,16 @@ async def read_index():
 
 @app.get("/token")
 def get_token(persona: str = None):
+    import uuid
     pid = persona or active_persona_id
     p = get_persona(pid)
+    room_name = f"room-{uuid.uuid4().hex[:8]}"
     metadata = json.dumps({"persona_id": pid, "language": p["language"] if p else "en"})
     at = api.AccessToken(
         os.environ["LIVEKIT_API_KEY"],
         os.environ["LIVEKIT_API_SECRET"],
     ).with_identity("web-user").with_grants(
-        api.VideoGrants(room_join=True, room="default")
+        api.VideoGrants(room_join=True, room=room_name)
     ).with_metadata(metadata)
     return {
         "token": at.to_jwt(),

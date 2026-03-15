@@ -209,9 +209,16 @@ const App: React.FC = () => {
 
   // Speech connection
   const startConversation = async () => {
-    if (isConnected) return;
+    if (isConnecting) return;
+
+    // Clean up any previous room first
+    if (roomRef.current) {
+      await roomRef.current.disconnect();
+      roomRef.current = null;
+    }
 
     setIsConnecting(true);
+    setIsConnected(false);
     setStatus("Getting token...");
 
     try {
@@ -226,6 +233,8 @@ const App: React.FC = () => {
       room.on(RoomEvent.TrackSubscribed, (track) => {
         if (track.kind === Track.Kind.Audio) {
           const audio = track.attach();
+          audio.volume = 1.0;
+          audio.setAttribute('autoplay', 'true');
           document.body.appendChild(audio);
         }
       });
@@ -264,9 +273,38 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container">
-      <div className="luxury-card chat-layout">
-        <div className="header">
+      {/* Left Navigation Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
           <h1>DocQuery</h1>
+        </div>
+
+        <nav className="sidebar-nav">
+          <button
+            className={`nav-item ${activeTab === 'chat' ? 'active' : ''}`}
+            onClick={() => setActiveTab('chat')}
+          >
+            <MessageSquare size={18} />
+            <span>Chat</span>
+          </button>
+          <button
+            className={`nav-item ${activeTab === 'speech' ? 'active' : ''}`}
+            onClick={() => setActiveTab('speech')}
+          >
+            <Mic size={18} />
+            <span>Speech</span>
+          </button>
+          <button
+            className={`nav-item ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            <History size={18} />
+            <span>History</span>
+          </button>
+        </nav>
+
+        <div className="sidebar-footer">
+          <span className="persona-label">Agent Persona</span>
           <div className="persona-selector">
             <select
               value={selectedPersona}
@@ -275,231 +313,214 @@ const App: React.FC = () => {
             >
               {personas.map(p => (
                 <option key={p.id} value={p.id}>
-                  {p.name} — {p.description}
+                  {p.name}
                 </option>
               ))}
             </select>
           </div>
         </div>
+      </aside>
 
-        <div className="tabs">
-          <button
-            className={`tab ${activeTab === 'chat' ? 'active' : ''}`}
-            onClick={() => setActiveTab('chat')}
-          >
-            <MessageSquare size={18} />
-            Chat
-          </button>
-          <button
-            className={`tab ${activeTab === 'speech' ? 'active' : ''}`}
-            onClick={() => setActiveTab('speech')}
-          >
-            <Mic size={18} />
-            Speech
-          </button>
-          <button
-            className={`tab ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => setActiveTab('history')}
-          >
-            <History size={18} />
-            History
-          </button>
-        </div>
-
-        {activeTab === 'chat' ? (
-          <div className="chat-container">
-            {/* Upload section */}
-            <div className="upload-section compact">
-              <div className="file-input-wrapper">
-                <label htmlFor="docUpload" className="upload-label compact">
-                  {isUploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-                  {isUploading ? "Processing..." : "Upload Document"}
-                </label>
-                <input
-                  type="file"
-                  id="docUpload"
-                  className="file-input"
-                  accept=".txt,.md,.py,.json,.pdf,.docx,.doc,.png,.jpg,.jpeg,.tiff,.tif,.bmp,.webp"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-              </div>
-              <div className="file-name">{fileName}</div>
+      {/* Main Top-Level Area */}
+      <main className="main-content">
+        {/* Universal Top Bar for Context / Document Status */}
+        {(activeTab === 'chat' || activeTab === 'speech') && (
+          <header className="top-bar">
+            <div className="top-bar-title">
+              {activeTab === 'chat' ? 'Text Conversation' : 'Voice Interaction'}
             </div>
-
-            {/* Chat messages */}
-            <div className="chat-messages">
-              {chatMessages.length === 0 ? (
-                <div className="chat-empty">
-                  <MessageSquare size={48} opacity={0.2} />
-                  <p>Start a conversation with the AI agent.</p>
-                  <p className="hint">Upload documents for context-aware answers.</p>
-                </div>
-              ) : (
-                chatMessages.map((msg, idx) => (
-                  <div key={idx} className={`message ${msg.role}`}>
-                    {msg.time && <span className="ts">{msg.time}</span>}
-                    <div className="message-content">{msg.text}</div>
-                  </div>
-                ))
-              )}
-              {isSending && (
-                <div className="message assistant">
-                  <div className="message-content typing">
-                    <span className="dot"></span>
-                    <span className="dot"></span>
-                    <span className="dot"></span>
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Chat input */}
-            <div className="chat-input-section">
-              {chatMessages.length > 0 && (
-                <button className="clear-chat-btn" onClick={clearChat} title="Clear chat">
-                  <Trash2 size={16} />
-                </button>
-              )}
-              <textarea
-                ref={inputRef}
-                className="chat-input"
-                placeholder="Type a message... (Shift+Enter for new line)"
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={1}
-                disabled={isSending}
+            <div className="upload-module">
+              <span className="file-status" title={fileName}>{fileName}</span>
+              <input
+                type="file"
+                id="universalUpload"
+                className="file-input"
+                accept=".txt,.md,.py,.json,.pdf,.docx,.doc,.png,.jpg,.jpeg,.tiff,.tif,.bmp,.webp"
+                onChange={handleFileUpload}
+                disabled={isUploading}
               />
-              <button
-                className="send-btn"
-                onClick={sendMessage}
-                disabled={isSending || !chatInput.trim()}
-              >
-                {isSending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
-              </button>
+              <label htmlFor="universalUpload" className="upload-btn">
+                {isUploading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
+                <span>{isUploading ? "Uploading..." : "Add Context"}</span>
+              </label>
             </div>
-          </div>
-        ) : activeTab === 'speech' ? (
-          <div className="speech-container">
-            {/* Upload section */}
-            <div className="upload-section compact">
-              <div className="file-input-wrapper">
-                <label htmlFor="docUploadSpeech" className="upload-label compact">
-                  {isUploading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-                  {isUploading ? "Processing..." : "Upload Document"}
-                </label>
-                <input
-                  type="file"
-                  id="docUploadSpeech"
-                  className="file-input"
-                  accept=".txt,.md,.py,.json,.pdf,.docx,.doc,.png,.jpg,.jpeg,.tiff,.tif,.bmp,.webp"
-                  onChange={handleFileUpload}
-                  disabled={isUploading}
-                />
-              </div>
-              <div className="file-name">{fileName}</div>
-            </div>
+          </header>
+        )}
 
-            <div className="speech-content">
-              <div className="status-section">
-                <div className="status-badge">
+        {/* Dynamic Views */}
+        <div className="view-container">
+          {activeTab === 'chat' ? (
+            <div className="chat-view">
+              <div className="chat-messages">
+                {chatMessages.length === 0 ? (
+                  <div className="chat-empty">
+                    <div className="empty-icon"><MessageSquare size={32} /></div>
+                    <h2>How can I help you?</h2>
+                    <p>Start a conversation or upload context above.</p>
+                  </div>
+                ) : (
+                  <div className="messages-wrapper">
+                    {chatMessages.map((msg, idx) => (
+                      <div key={idx} className={`message-row ${msg.role}`}>
+                        <div className="message-bubble">
+                          <div className="message-content">{msg.text}</div>
+                          {msg.time && <span className="message-time">{msg.time}</span>}
+                        </div>
+                      </div>
+                    ))}
+                    {isSending && (
+                      <div className="message-row assistant">
+                        <div className="message-bubble typing-bubble">
+                          <span className="dot"></span>
+                          <span className="dot"></span>
+                          <span className="dot"></span>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+                )}
+              </div>
+
+              <div className="chat-input-area">
+                <div className="chat-input-wrapper">
+                  {chatMessages.length > 0 && (
+                    <button className="clear-btn" onClick={clearChat} title="Clear conversation">
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                  <textarea
+                    ref={inputRef}
+                    className="chat-input"
+                    placeholder="Message DocQuery..."
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    rows={1}
+                    disabled={isSending}
+                  />
+                  <button
+                    className="send-btn"
+                    onClick={sendMessage}
+                    disabled={isSending || !chatInput.trim()}
+                  >
+                    {isSending ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                  </button>
+                </div>
+                <div className="input-disclaimer">
+                  AI can occasionally generate incorrect information. Verify critical data.
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'speech' ? (
+            <div className="speech-view">
+              <div className="speech-centerpiece">
+                <div className="status-indicator">
                   <div className={`status-dot ${isConnected ? 'active' : ''}`} />
-                  <span>{status}</span>
+                  <span className="status-text">{status}</span>
                 </div>
 
                 {isConnected && (
-                  <div className="call-overlay">
-                    <div className="timer">{formatTime(timer)}</div>
-                    <div className="visualizer-container">
-                      {[...Array(16)].map((_, i) => (
+                  <div className="active-call-ui">
+                    <div className="timer-display">{formatTime(timer)}</div>
+                    <div className="audio-visualizer">
+                      {[...Array(24)].map((_, i) => (
                         <div
                           key={i}
-                          className="bar"
+                          className="wave-bar"
                           style={{
-                            height: `${Math.random() * 50 + 5}px`,
-                            animation: `barPulse ${0.3 + Math.random() * 0.7}s infinite alternate`
+                            height: `${Math.random() * 60 + 10}px`,
+                            animation: `wavePulse ${0.3 + Math.random() * 0.5}s infinite alternate`
                           }}
                         />
                       ))}
                     </div>
                   </div>
                 )}
+
+                <button
+                  className={`call-action-btn ${isConnected ? 'end-call' : 'start-call'}`}
+                  onClick={isConnected ? disconnectRoom : startConversation}
+                  disabled={isConnecting}
+                >
+                  {isConnecting ? (
+                    <Loader2 className="animate-spin" size={24} />
+                  ) : isConnected ? (
+                    <XCircle size={24} />
+                  ) : (
+                    <Mic size={24} />
+                  )}
+                  <span>{isConnecting ? "Connecting..." : isConnected ? "End Conversation" : "Start Voice Session"}</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="history-view">
+              <div className="history-header">
+                <h2>Session History</h2>
+                <p>Review past voice interactions and generated transcripts.</p>
               </div>
 
-              <button
-                className={`action-button ${isConnected ? 'disconnect' : ''}`}
-                onClick={isConnected ? disconnectRoom : startConversation}
-                disabled={isConnecting}
-              >
-                {isConnecting ? (
-                  <Loader2 className="animate-spin" />
-                ) : isConnected ? (
-                  <XCircle size={24} />
+              <div className="history-grid">
+                {sessions.length === 0 ? (
+                  <div className="history-empty">No recorded sessions yet.</div>
                 ) : (
-                  <Mic size={24} />
+                  sessions.map((s) => (
+                    <div key={s.id} className="history-card" onClick={() => openSession(s)}>
+                      <div className="hc-primary">
+                        <h3>{s.user}</h3>
+                        <span className="hc-time">{s.time}</span>
+                      </div>
+                      <div className="hc-actions">
+                        <FileText size={18} className={s.transcript_exists ? 'active-icon' : 'dim-icon'} />
+                        <Play size={18} className="active-icon" />
+                      </div>
+                    </div>
+                  ))
                 )}
-                {isConnecting ? "Connecting..." : isConnected ? "End Conversation" : "Start Conversation"}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="history-list">
-            {sessions.length === 0 ? (
-              <p style={{ textAlign: 'center', opacity: 0.5 }}>No recorded sessions yet.</p>
-            ) : (
-              sessions.map((s) => (
-                <div key={s.id} className="session-item" onClick={() => openSession(s)}>
-                  <div className="session-info">
-                    <h4>{s.user}</h4>
-                    <p>{s.time}</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <FileText size={18} opacity={s.transcript_exists ? 1 : 0.2} />
-                    <Play size={18} />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-
-      {selectedSession && (
-        <div className="transcript-modal" onClick={() => setSelectedSession(null)}>
-          <div className="transcript-card" onClick={e => e.stopPropagation()}>
-            <div className="transcript-header">
-              <div>
-                <h2 style={{ margin: 0, fontSize: '1.2rem' }}>{selectedSession.user}</h2>
-                <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>{selectedSession.time}</span>
               </div>
-              <button className="close-btn" onClick={() => setSelectedSession(null)}>
-                <X size={20} />
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Transcript Modal overlay */}
+      {selectedSession && (
+        <div className="modal-overlay" onClick={() => setSelectedSession(null)}>
+          <div className="modal-container" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="mh-info">
+                <h2>{selectedSession.user}</h2>
+                <span>{selectedSession.time}</span>
+              </div>
+              <button className="modal-close" onClick={() => setSelectedSession(null)}>
+                <X size={24} />
               </button>
             </div>
 
-            <div className="transcript-body">
+            <div className="modal-body">
               {isLoadingTranscript ? (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <div className="modal-loader">
                   <Loader2 className="animate-spin" size={40} />
                 </div>
               ) : transcript.length === 0 ? (
-                <p style={{ textAlign: 'center', padding: '2rem', opacity: 0.5 }}>Transcript not available for this session.</p>
+                <div className="modal-empty">Transcript not available for this session.</div>
               ) : (
-                transcript.map((line, idx) => (
-                  <div key={idx} className={`message ${line.role || 'system'}`}>
-                    <span className="ts">{line.time}</span>
-                    <div>{line.text || line.raw}</div>
-                  </div>
-                ))
+                <div className="transcript-list">
+                  {transcript.map((line, idx) => (
+                    <div key={idx} className={`transcript-row ${line.role || 'system'}`}>
+                      <div className="tr-time">{line.time}</div>
+                      <div className="tr-content">{line.text || line.raw}</div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
-            <div className="transcript-footer">
+            <div className="modal-footer">
               <audio
                 controls
-                className="audio-player"
+                className="modal-audio"
                 src={`/sessions/${selectedSession.filename}`}
               />
             </div>

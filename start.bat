@@ -10,6 +10,7 @@ setlocal enabledelayedexpansion
 cd /d "%~dp0"
 set "DIR=%~dp0"
 set "LOG_DIR=%DIR%logs"
+set "PYTHONIOENCODING=utf-8"
 
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 
@@ -56,6 +57,16 @@ goto :eof
 :start_all
 echo.
 echo   LiveKit Agent Platform - Starting...
+echo.
+
+:: Activate virtual environment
+if exist "%DIR%.venv\Scripts\activate.bat" (
+    echo   Activating .venv...
+    call "%DIR%.venv\Scripts\activate.bat"
+    echo         Done
+) else (
+    echo   WARNING: .venv not found, using system Python
+)
 echo.
 
 :: 1. LiveKit Server

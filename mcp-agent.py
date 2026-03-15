@@ -23,6 +23,7 @@ from livekit.plugins.cartesia import TTS as CartesiaTTS
 from agent_personas import get_voice_id, get_persona, DEFAULT_PERSONA_ID
 
 import sys
+os.environ["PYTHONIOENCODING"] = "utf-8"
 logging.basicConfig(
     level=logging.INFO,
     handlers=[logging.StreamHandler(stream=open(sys.stdout.fileno(), mode='w', encoding='utf-8', closefd=False))]
@@ -34,7 +35,10 @@ load_dotenv()
 os.environ["LIVEKIT_DISABLE_GATEWAYS"] = "true"
 os.environ["LIVEKIT_DISABLE_AGENT_GATEWAY"] = "true"
 
-server = AgentServer()
+server = AgentServer(
+    load_threshold=float('inf'),
+    num_idle_processes=1,
+)
 
 
 class MyAgent(Agent):
@@ -152,7 +156,8 @@ async def entrypoint(ctx: JobContext):
         api_key=os.environ["CARTESIA_API_KEY"],
         model="sonic-3",
         voice=voice_id,
-        sample_rate=48000
+        sample_rate=48000,
+        volume=2.0,
     )
 
     session = AgentSession(
@@ -239,7 +244,7 @@ async def entrypoint(ctx: JobContext):
         ts = ist_now.strftime("%H:%M:%S")
         line = f"[{ts}] {label}: {text}"
         conversation_log.append({"role": role, "text": text, "time": ts})
-        logger.info(line)
+        logger.info(line.encode('ascii', 'replace').decode('ascii'))
         with open(transcript_file, "a", encoding="utf-8") as f:
             f.write(line + "\n")
 
