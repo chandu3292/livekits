@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DocQuery Premium AI Chat Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#256af4",
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#080a0f",
+                        "glass": "rgba(255, 255, 255, 0.03)",
+                        "glass-border": "rgba(255, 255, 255, 0.1)",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #080a0f;
+            overflow: hidden;
+        }
+        .glass-panel {
+            background: rgba(15, 18, 26, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+        .glow-purple {
+            background: radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.15) 0%, transparent 70%);
+        }
+        .glow-blue {
+            background: radial-gradient(circle at 50% 50%, rgba(37, 106, 244, 0.1) 0%, transparent 70%);
+        }
+        .card-3d {
+            transform: perspective(1000px) rotateX(2deg);
+            transition: transform 0.3s ease;
+        }
+        .card-3d:hover {
+            transform: perspective(1000px) rotateX(0deg) translateY(-2px);
+        }
+        .input-pill {
+            background: rgba(20, 24, 35, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display">
+<!-- Background Ambient Glows -->
+<div class="fixed inset-0 pointer-events-none z-0">
+<div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] glow-purple"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] glow-blue"></div>
+</div>
+<div class="relative z-10 flex h-screen w-full overflow-hidden">
+<!-- Left SideNavBar -->
+<aside class="w-72 flex flex-col glass-panel border-r border-glass-border p-6 justify-between">
+<div class="flex flex-col gap-8">
+<!-- Logo -->
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white text-3xl">auto_awesome</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-xl font-bold tracking-tight text-white">DocQuery</h1>
+<p class="text-xs text-slate-400 font-medium uppercase tracking-widest">Premium AI</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-2">
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+<span class="material-symbols-outlined">chat_bubble</span>
+<p class="text-sm font-semibold">Intelligence</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 transition-colors">
+<span class="material-symbols-outlined">mic</span>
+<p class="text-sm font-semibold">Speech Engine</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 transition-colors">
+<span class="material-symbols-outlined">history</span>
+<p class="text-sm font-semibold">Neural History</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-slate-400 transition-colors">
+<span class="material-symbols-outlined">folder_open</span>
+<p class="text-sm font-semibold">Vault</p>
+</div>
+</nav>
+</div>
+<!-- Footer Persona Selector -->
+<div class="flex flex-col gap-4">
+<div class="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-3 shadow-inner">
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold text-slate-500 uppercase">Agent Persona</span>
+<span class="material-symbols-outlined text-xs text-primary">unfold_more</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="size-8 rounded-full bg-slate-800 border border-white/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm text-white">psychology</span>
+</div>
+<p class="text-sm font-medium text-slate-200">Legal Analyst v4</p>
+</div>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-white/5 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-slate-400">settings</span>
+<p class="text-sm font-medium text-slate-400">Deep Settings</p>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col relative overflow-hidden">
+<!-- Frosted Header -->
+<header class="h-20 flex items-center justify-between px-10 glass-panel border-b-0 m-4 rounded-2xl">
+<div class="flex items-center gap-6 flex-1">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">description</span>
+<span class="text-sm font-medium text-slate-300">Contract_Alpha_2024.pdf</span>
+</div>
+<div class="h-1.5 w-48 bg-white/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-3/4 rounded-full shadow-[0_0_10px_rgba(37,106,244,0.5)]"></div>
+</div>
+<span class="text-xs font-bold text-primary">75% ANALYZED</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/25 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-sm">upload</span>
+<span>Upload New</span>
+</button>
+<div class="size-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 cursor-pointer">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<div class="size-10 rounded-full border-2 border-primary/50 overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="Portrait of a modern professional man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIkNUtiH2l8YRogNIQ7AF1QSMek2Ofzi3KcZlaJneSKVwCh2ycnAL59BgesANlzfyTnxwXEsQECQH1FGb5vHpGmI5-WredNQpEG_3wJ5J9peJ5LAANzN12qkdOj7XWDafRznIXvkKR-s7Bzd_WYBcnt6sfVtk52UXe32quupXzYYLMLv53QWtfYR0K6WGsQmy9jPF-LIOp3yEbDSfgiRz28waAAq_yFvnAcPrMAV-GjF1NCDxsRrziBJ43Bmt-nh9u9bWup1OZWW4"/>
+</div>
+</div>
+</header>
+<!-- Chat Area -->
+<div class="flex-1 overflow-y-auto px-10 py-6 space-y-8 custom-scrollbar">
+<!-- Bot Message -->
+<div class="flex items-start gap-4 card-3d">
+<div class="size-10 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-primary flex items-center justify-center shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-white text-xl">smart_toy</span>
+</div>
+<div class="flex flex-col gap-2 max-w-2xl">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">DocQuery Core</span>
+<div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl rounded-tl-none text-slate-200 leading-relaxed shadow-xl">
+                            The document analysis is nearly complete. I've identified 14 key termination clauses. Section 4.2 contains a non-standard liability waiver that might pose a medium risk for your organization. Would you like a detailed breakdown?
+                        </div>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex items-start gap-4 flex-row-reverse card-3d">
+<div class="size-10 shrink-0 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-slate-300 text-xl">person</span>
+</div>
+<div class="flex flex-col gap-2 max-w-xl items-end">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mr-1">Premium User</span>
+<div class="bg-primary/20 border border-primary/30 p-5 rounded-2xl rounded-tr-none text-white leading-relaxed shadow-lg backdrop-blur-sm">
+                            Yes, summarize the termination clauses and specifically highlight any financial penalties associated with early exit.
+                        </div>
+</div>
+</div>
+<!-- Bot Message -->
+<div class="flex items-start gap-4 card-3d">
+<div class="size-10 shrink-0 rounded-xl bg-gradient-to-br from-indigo-500 to-primary flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-white text-xl">smart_toy</span>
+</div>
+<div class="flex flex-col gap-4 max-w-3xl">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">DocQuery Core</span>
+<div class="bg-white/5 backdrop-blur-md border border-white/10 p-5 rounded-2xl rounded-tl-none text-slate-200 leading-relaxed shadow-xl">
+<p class="mb-4">Here are the financial implications for termination:</p>
+<div class="grid grid-cols-2 gap-3">
+<div class="p-3 bg-white/5 rounded-xl border border-white/10">
+<span class="text-[10px] text-primary font-bold block mb-1">EXIT FEE</span>
+<span class="text-lg font-bold text-white">$45,000.00</span>
+</div>
+<div class="p-3 bg-white/5 rounded-xl border border-white/10">
+<span class="text-[10px] text-amber-500 font-bold block mb-1">NOTICE PERIOD</span>
+<span class="text-lg font-bold text-white">90 DAYS</span>
+</div>
+</div>
+<p class="mt-4 text-sm text-slate-400">
+                                Per Section 8.4, terminating prior to the 12-month mark triggers a 100% forfeiture of the initial deposit.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Bar -->
+<div class="p-10 pt-0 flex justify-center">
+<div class="w-full max-w-4xl input-pill p-2 pl-6 flex items-center gap-4 rounded-full">
+<span class="material-symbols-outlined text-slate-500">attachment</span>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-slate-100 placeholder:text-slate-600 font-medium" placeholder="Query your documents with AI..." type="text"/>
+<div class="flex items-center gap-2 mr-1">
+<button class="size-10 flex items-center justify-center text-slate-500 hover:text-white transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</button>
+<button class="h-12 px-6 bg-primary rounded-full flex items-center gap-2 text-white font-bold shadow-[0_0_20px_rgba(37,106,244,0.4)] hover:shadow-[0_0_30px_rgba(37,106,244,0.6)] transition-all">
+<span>Send</span>
+<span class="material-symbols-outlined text-sm">send</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
