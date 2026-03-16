@@ -36,7 +36,13 @@
       "Bash(cmd.exe //c \"tasklist | findstr python\" 2>&1)",
       "Bash(cmd.exe //c \"taskkill /F /PID 15976 & taskkill /F /PID 3212\" 2>&1)",
       "Bash(cmd.exe //c \"taskkill /F /PID 11708\" 2>&1 && cmd.exe //c \"start \\\\\"mcp-agent\\\\\" /B cmd /c \\\\\"python C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\mcp-agent.py start > C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits\\\\logs\\\\agent.log 2>&1\\\\\"\" 2>&1)",
-      "Bash(cmd.exe //c \"cd /d C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits && start /B cmd /c \\\\\"python mcp-agent.py start > logs\\\\agent.log 2>&1\\\\\"\" 2>&1)"
+      "Bash(cmd.exe //c \"cd /d C:\\\\Users\\\\karri\\\\OneDrive\\\\Desktop\\\\projects\\\\livekits && start /B cmd /c \\\\\"python mcp-agent.py start > logs\\\\agent.log 2>&1\\\\\"\" 2>&1)",
+      "Bash(git log:*)",
+      "Bash(pip show:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(tasklist:*)",
+      "Bash(python:*)"
     ]
   }
 }

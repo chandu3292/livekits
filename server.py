@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from livekit import api
 from agent_personas import list_personas, get_persona, DEFAULT_PERSONA_ID
-from sentence_transformers import SentenceTransformer
+from FlagEmbedding import BGEM3FlagModel
 from ocr import process_file as ocr_process_file
 import logging
 from datetime import datetime, timedelta, timezone
@@ -46,9 +46,9 @@ app.add_middleware(
 load_dotenv()
 
 # Configuration
-# Indic SBERT Model
-indicator_model = SentenceTransformer("l3cube-pune/indic-sentence-similarity-sbert")
-EMBEDDING_DIMENSIONS = indicator_model.get_sentence_embedding_dimension()
+# BGE-M3 Multilingual Embedding Model (dense + sparse + colbert hybrid)
+embedding_model = BGEM3FlagModel("BAAI/bge-m3", use_fp16=True)
+EMBEDDING_DIMENSIONS = 1024
 CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 200
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
@@ -64,12 +64,15 @@ ALL_UPLOAD_EXTENSIONS = {".pdf", ".txt", ".md", ".py", ".json"} | OCR_EXTENSIONS
 
 
 class KnowledgeBase:
-    """FAISS-based vector knowledge base for RAG."""
+    """BGE-M3 hybrid (dense+sparse+colbert) vector knowledge base for RAG."""
 
     def __init__(self):
         self.metadata = []  # list of {text, source, doc_id}
         self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
-        rag_logger.info("KnowledgeBase initialised (backend=faiss)")
+        # Store raw chunk texts + sparse/colbert outputs for hybrid scoring
+        self.chunk_texts = []
+        self.sparse_outputs = []  # token_weights dicts per chunk
+        rag_logger.info("KnowledgeBase initialised (BGE-M3 hybrid, backend=faiss)")
 
     def _clean_text(self, text: str) -> str:
         if not text: return ""
@@ -94,10 +97,19 @@ class KnowledgeBase:
             if end >= text_len: break
         return chunks
 
+    def _encode(self, texts):
+        """Encode texts using BGE-M3 with dense + sparse + colbert."""
+        return embedding_model.encode(
+            texts,
+            return_dense=True,
+            return_sparse=True,
+            return_colbert_vecs=False,
+        )
+
     def build_index(self, text: str, source_name: str, doc_id: str = None) -> str:
         if doc_id is None:
             doc_id = str(uuid.uuid4())
-        self.clear(doc_id=doc_id)
+        self.clear_by_source(source_name)
         clean_text = self._clean_text(text)
         chunks = self._get_chunks(clean_text)
         self.add_documents(chunks, source_name=source_name, doc_id=doc_id)
@@ -110,30 +122,71 @@ class KnowledgeBase:
         if doc_id is None:
             doc_id = str(uuid.uuid4())
 
-        rag_logger.info(f"[FAISS] Adding {len(chunks)} chunks — doc_id={doc_id} source='{source_name}'")
+        rag_logger.info(f"[BGE-M3] Adding {len(chunks)} chunks — doc_id={doc_id} source='{source_name}'")
         add_start = time.time()
 
-        vectors = indicator_model.encode(chunks).astype('float32')
-        faiss.normalize_L2(vectors)
+        output = self._encode(chunks)
+        dense_vecs = np.array(output['dense_vecs']).astype('float32')
+        faiss.normalize_L2(dense_vecs)
         rag_logger.info(f"Embeddings generated in {(time.time()-add_start)*1000:.2f}ms")
 
-        self.index.add(vectors)
-        for chunk in chunks:
+        self.index.add(dense_vecs)
+        for i, chunk in enumerate(chunks):
             self.metadata.append({"text": chunk, "source": source_name, "doc_id": doc_id})
+            self.chunk_texts.append(chunk)
+            self.sparse_outputs.append(output['lexical_weights'][i])
         rag_logger.info(f"FAISS index size: {self.index.ntotal} vectors")
         rag_logger.info(f"add_documents done in {(time.time()-add_start)*1000:.2f}ms")
 
+    def clear_by_source(self, source_name: str):
+        """Remove all chunks for a given source and rebuild index."""
+        old_count = len(self.metadata)
+        keep = [(m, t, s) for m, t, s in zip(self.metadata, self.chunk_texts, self.sparse_outputs)
+                if m.get("source") != source_name]
+        if len(keep) == old_count:
+            return
+        if keep:
+            self.metadata, self.chunk_texts, self.sparse_outputs = zip(*keep)
+            self.metadata = list(self.metadata)
+            self.chunk_texts = list(self.chunk_texts)
+            self.sparse_outputs = list(self.sparse_outputs)
+            # Rebuild FAISS index
+            output = self._encode(self.chunk_texts)
+            vecs = np.array(output['dense_vecs']).astype('float32')
+            faiss.normalize_L2(vecs)
+            self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
+            self.index.add(vecs)
+        else:
+            self.metadata = []
+            self.chunk_texts = []
+            self.sparse_outputs = []
+            self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
+        rag_logger.info(f"Cleared source='{source_name}', {old_count - len(self.metadata)} chunks removed")
+
     def clear(self, doc_id: str = None):
         if doc_id:
-            self.metadata = [m for m in self.metadata if m.get("doc_id") != doc_id]
-            self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
-            if self.metadata:
-                vecs = indicator_model.encode([m["text"] for m in self.metadata]).astype('float32')
+            keep = [(m, t, s) for m, t, s in zip(self.metadata, self.chunk_texts, self.sparse_outputs)
+                    if m.get("doc_id") != doc_id]
+            if keep:
+                self.metadata, self.chunk_texts, self.sparse_outputs = zip(*keep)
+                self.metadata = list(self.metadata)
+                self.chunk_texts = list(self.chunk_texts)
+                self.sparse_outputs = list(self.sparse_outputs)
+                output = self._encode(self.chunk_texts)
+                vecs = np.array(output['dense_vecs']).astype('float32')
                 faiss.normalize_L2(vecs)
+                self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
                 self.index.add(vecs)
+            else:
+                self.metadata = []
+                self.chunk_texts = []
+                self.sparse_outputs = []
+                self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
             rag_logger.info(f"FAISS: removed doc_id={doc_id}, {len(self.metadata)} chunks remain")
         else:
             self.metadata = []
+            self.chunk_texts = []
+            self.sparse_outputs = []
             self.index = faiss.IndexFlatIP(EMBEDDING_DIMENSIONS)
             rag_logger.info("FAISS index cleared")
 
@@ -147,27 +200,53 @@ class KnowledgeBase:
             docs[sn]["chunk_count"] += 1
         return list(docs.values())
 
+    def _compute_lexical_score(self, query_weights, doc_weights):
+        """Compute sparse lexical matching score between query and doc."""
+        score = 0.0
+        for token_id, q_weight in query_weights.items():
+            if token_id in doc_weights:
+                score += q_weight * doc_weights[token_id]
+        return score
+
     def search_rag(self, query: str, k: int = 5, source_name: str = None) -> str:
-        rag_logger.info(f"[FAISS] RAG search: '{query[:100]}' source_name={source_name}")
+        rag_logger.info(f"[BGE-M3] RAG search: '{query[:100]}' source_name={source_name}")
         start_time = time.time()
-        THRESHOLD = 0.25
 
         if self.index.ntotal == 0:
             rag_logger.warning("FAISS index is empty")
             return "NO_INFORMATION_IN_KNOWLEDGE_BASE"
 
-        query_vector = indicator_model.encode([query]).astype('float32')
-        faiss.normalize_L2(query_vector)
-        llm_results = []
+        # Encode query (dense + sparse)
+        q_output = self._encode([query])
+        q_dense = np.array(q_output['dense_vecs']).astype('float32')
+        faiss.normalize_L2(q_dense)
+        q_sparse = q_output['lexical_weights'][0]
 
-        D, I = self.index.search(query_vector, k)
+        # Dense search via FAISS
+        D, I = self.index.search(q_dense, min(k * 2, self.index.ntotal))
+
+        # Hybrid scoring: dense (0.6) + sparse/lexical (0.4)
+        DENSE_WEIGHT = 0.6
+        SPARSE_WEIGHT = 0.4
+        candidates = []
         for i, idx in enumerate(I[0]):
-            if idx == -1 or idx >= len(self.metadata): continue
+            if idx == -1 or idx >= len(self.metadata):
+                continue
             meta = self.metadata[idx]
-            if source_name and meta.get("source") != source_name: continue
-            score = float(D[0][i])
-            if score > THRESHOLD and len(llm_results) < 3:
-                llm_results.append(f"[{meta['source']}]: {meta['text']}")
+            if source_name and meta.get("source") != source_name:
+                continue
+            dense_score = float(D[0][i])
+            sparse_score = self._compute_lexical_score(q_sparse, self.sparse_outputs[idx])
+            hybrid_score = DENSE_WEIGHT * dense_score + SPARSE_WEIGHT * sparse_score
+            candidates.append((hybrid_score, idx))
+
+        # Sort by hybrid score, take top 3
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        llm_results = []
+        for score, idx in candidates[:3]:
+            meta = self.metadata[idx]
+            llm_results.append(f"[{meta['source']}]: {meta['text']}")
+            rag_logger.info(f"  chunk idx={idx} hybrid_score={score:.4f}")
 
         total_time = (time.time() - start_time) * 1000
         result_text = "\n\n---\n\n".join(llm_results) if llm_results else "No specific information found."
