@@ -1,161 +1,224 @@
-# DocQuery - Multimodal AI Agent Platform
+# DocQuery
 
-A multimodal AI agent platform with browser-based voice conversation, text chat, OCR document processing, Vector RAG knowledge base, and Google Calendar scheduling.
-
----
-
-## Quick Start
-
-### Start / Restart All Services
-```
-start.bat restart
-```
-Launches: LiveKit Server, FastAPI Server (`server.py`), and AI Voice Agent (`mcp-agent.py`).
-
-### Stop All Services
-```
-start.bat stop
-```
-
-### Check Status
-```
-start.bat status
-```
-
-### Logs
-```
-logs\livekit.log   - LiveKit server
-logs\server.log    - FastAPI backend
-logs\agent.log     - Voice agent
-```
+A multimodal AI agent platform that combines real-time voice conversation, intelligent document processing, and calendar scheduling into a single integrated system. Users interact with a context-aware AI assistant via text chat or voice, asking questions about uploaded documents, and booking appointments through natural language.
 
 ---
 
-## System Architecture
+## Key Features
+
+- **Real-time voice AI** using WebRTC (LiveKit), Deepgram STT, Cartesia TTS, and Google Gemini 2.5 Flash
+- **Retrieval-Augmented Generation (RAG)** with FAISS + BGE-M3 hybrid search (dense + sparse embeddings)
+- **Multiformat OCR pipeline** supporting PDF, DOCX, PNG, JPG, TIFF, BMP, WEBP, Markdown, and plain text
+- **Google Calendar scheduling** via natural language ("book me a slot tomorrow afternoon")
+- **Five voice personas** with multilingual support across English, Hindi, and Telugu
+- **Session recording** with synchronized WAV audio and timestamped transcripts
+- **Model Context Protocol (MCP)** integration connecting the voice agent to backend tools over HTTP/SSE
+
+---
+
+## Architecture
 
 ```
-livekits/
-├── server.py                  # FastAPI backend (RAG, chat, OCR, MCP tools)
-├── mcp-agent.py               # LiveKit AI voice agent (Gemini + Deepgram STT + Cartesia TTS)
-├── agent_personas.py          # Voice persona definitions
-├── start.bat                  # Windows service orchestration
-├── ocr/                       # OCR module (pytesseract)
-│   ├── extractor.py           # Image preprocessing & text extraction
-│   ├── table_extractor.py     # Structured table & key-value extraction
-│   └── file_handlers.py       # PDF, DOCX, image, text file routing
-├── calendar_integration/      # Google Calendar appointment scheduling
-├── credentials/               # Service account keys
-├── frontend/                  # React/Vite UI
-│   └── src/App.tsx
-├── sessions/                  # Recorded .wav audio & .txt transcripts
-└── livekit.yaml               # LiveKit server config
+Browser (React 19 + LiveKit WebRTC)
+        |
+        v
+FastAPI Backend (port 8005)
+  |-- /api/chat         RAG-powered text conversation
+  |-- /upload           Document ingestion and indexing
+  |-- /api/ocr          Standalone OCR extraction
+  |-- /token            LiveKit access token
+  |-- /mcp/sse          MCP tool server (for voice agent)
+  |-- /api/sessions     Session history and playback
+        |
+        v
+Core Modules
+  |-- KnowledgeBase     FAISS index + BGE-M3 hybrid search
+  |-- OCR Pipeline      Tesseract + PIL preprocessing
+  |-- Calendar Module   Google Calendar API + availability checker
+        |
+        v
+LiveKit Voice Agent (mcp-agent.py)
+  |-- STT: Deepgram Nova-3
+  |-- LLM: Gemini 2.5 Flash-lite
+  |-- TTS: Cartesia Sonic-3
+  |-- VAD: Silero
+  |-- MCP: Connects to FastAPI tool server
 ```
 
-### Core Services
+---
 
-| Service | File | Description |
-|---------|------|-------------|
-| FastAPI Server | `server.py` | Backend — FAISS vector store, file upload, OCR, text chat (Gemini), MCP tool server |
-| Voice Agent | `mcp-agent.py` | LiveKit voice agent — Deepgram STT, Gemini LLM, Cartesia TTS |
-| Frontend | `frontend/` | React UI with Chat, Speech, and History tabs |
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Voice Agent | LiveKit Agents, Google Gemini 2.5 Flash |
+| STT | Deepgram Nova-3 |
+| TTS | Cartesia Sonic-3 |
+| Embeddings | BGE-M3 (FlagEmbedding, 1024-dim) |
+| Vector Search | FAISS IndexFlatIP |
+| OCR | Tesseract + Pillow |
+| Document Parsing | PyPDF, python-docx |
+| Backend API | FastAPI + Uvicorn |
+| Frontend | React 19, TypeScript, Vite 7 |
+| Calendar | Google Calendar API v3 |
+| Protocol | MCP (Model Context Protocol) over SSE |
 
 ---
 
-## Features
+## RAG Pipeline
 
-### Text Chat
-Chat with the AI agent via the browser. Uses Gemini with RAG context from uploaded documents.
+Documents are chunked (1000 chars, 200-char overlap) and embedded using BGE-M3, a multilingual model producing 1024-dimensional vectors. Retrieval uses a weighted combination:
 
-### Voice Conversation (Speech Tab)
-Connect via browser microphone for real-time voice conversation with the AI agent powered by LiveKit.
+- **Dense similarity** (cosine via FAISS IndexFlatIP): 60%
+- **Sparse lexical matching**: 40%
 
-### OCR Document Processing
-Upload PDFs, DOCX, images (PNG, JPG, TIFF, BMP) with:
-- pytesseract OCR with image preprocessing
-- Structured table extraction
-- Key-value pair detection
-
-### Vector RAG (Knowledge Base)
-Upload documents to give the agent domain knowledge. Uses FAISS with `l3cube-pune/indic-sentence-similarity-sbert` for multilingual embeddings.
-
-### Google Calendar Scheduling
-The agent can check availability and book appointments through voice or text conversation.
-
-### Session Recording
-All voice sessions are recorded as 48kHz mono WAV files with timestamped transcripts in `sessions/`.
+Top-3 retrieved chunks are injected as context into the Gemini prompt before generating a response.
 
 ---
 
-## UI
+## OCR Pipeline
 
-Access at `http://localhost:8005`
+```
+Input File
+    |
+file_handlers.py  (routes by MIME type / extension)
+    |
+extractor.py      (grayscale + contrast + binarization + pytesseract)
+    |
+table_extractor.py (structured table and key-value pair extraction)
+```
 
-- **Chat** — Text conversation with the AI agent
-- **Speech** — Real-time voice conversation via browser microphone
-- **History** — Browse past sessions with audio playback and transcripts
+For PDFs, each page is analyzed for text density. Pages with fewer than 50 characters fall back to image-based OCR at 200 DPI.
 
 ---
 
-## Configuration
+## Calendar Scheduling
 
-### Environment Variables (`.env`)
+The `calendar_integration/` module exposes four MCP tools to the voice agent:
+
+| Tool | Purpose |
+|---|---|
+| `query_knowledge_base` | Retrieve context from indexed documents |
+| `check_and_book_appointment` | Check availability for a natural language date |
+| `schedule_appointment` | Create a Google Calendar event |
+| `get_appointment_info` | Return slot duration and configuration |
+
+Business hours default to Monday through Friday, 9 AM to 5 PM IST, in 30-minute slots.
+
+---
+
+## Voice Personas
+
+| Persona | Language | Voice |
+|---|---|---|
+| Sophia | English | Female, professional |
+| Alex | English | Male, casual |
+| Maya | English | Female, Indian accent |
+| Priya | Telugu | Female |
+| Arjun | Hindi | Male |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- Tesseract OCR installed and on PATH
+- LiveKit server binary
+- API keys: Google Gemini, Deepgram, Cartesia, Google Calendar
+
+### Setup
 
 ```bash
-# LiveKit
+git clone https://github.com/chandu3292/livekits.git
+cd livekits
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+
+cd frontend
+npm install
+npm run build
+cd ..
+
+cp .env.example .env
+# Fill in API keys in .env
+```
+
+### Run
+
+```bash
+start.bat restart   # Start all services (LiveKit + FastAPI + Voice Agent)
+start.bat stop      # Stop all services
+start.bat status    # Check service status
+```
+
+Open `http://localhost:8005` in your browser.
+
+---
+
+## Environment Variables
+
+```env
 LIVEKIT_URL=ws://localhost:7880
 LIVEKIT_API_KEY=devkey
-LIVEKIT_API_SECRET=<your-secret>
+LIVEKIT_API_SECRET=your_secret
 
-# STT / TTS
-DEEPGRAM_API_KEY=<key>
-CARTESIA_API_KEY=<key>
+DEEPGRAM_API_KEY=your_key
+CARTESIA_API_KEY=your_key
+GOOGLE_API_KEY=your_key
 
-# LLM (Gemini only)
-LLM_PROVIDER=gemini
-GOOGLE_API_KEY=<key>
 GEMINI_MODEL=gemini-2.5-flash-lite
 CHAT_MODEL=gemini-2.5-flash
 
-# Google Calendar
-GOOGLE_CALENDAR_CREDENTIALS=credentials/calendar.json
-GOOGLE_CALENDAR_ID=<calendar-id>
+GOOGLE_CALENDAR_ID=your_calendar_id
 DEFAULT_TIMEZONE_OFFSET=330
+PORT=8005
 ```
 
 ---
 
-## API Endpoints
+## Project Structure
+
+```
+livekits/
+├── server.py               FastAPI server, RAG, MCP tool endpoints
+├── mcp-agent.py            LiveKit voice agent
+├── agent_personas.py       Persona definitions and voice mappings
+├── ocr/
+│   ├── file_handlers.py    Format routing (PDF, DOCX, images, text)
+│   ├── extractor.py        Tesseract + PIL preprocessing
+│   └── table_extractor.py  Table and key-value extraction
+├── calendar_integration/
+│   ├── google_calendar.py  Google Calendar API wrapper
+│   ├── availability_checker.py
+│   └── appointment_manager.py
+├── frontend/               React 19 + Vite 7 UI
+│   └── src/App.tsx         Chat, Speech, and History tabs
+├── sessions/               Recorded WAV files and transcripts
+└── logs/                   Per-service log files
+```
+
+---
+
+## API Reference
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/token` | Get LiveKit access token |
-| POST | `/upload` | Upload document for RAG indexing (with OCR) |
-| POST | `/api/chat` | Text chat with AI agent |
-| POST | `/api/chat/clear` | Clear chat history |
+|---|---|---|
+| GET | `/token` | LiveKit access token with persona metadata |
+| POST | `/upload` | Upload and index a document |
+| POST | `/api/chat` | Text conversation with RAG context |
 | POST | `/api/ocr` | Standalone OCR extraction |
-| GET | `/api/sessions` | List recorded sessions |
+| GET | `/api/documents` | List indexed documents |
+| GET | `/api/personas` | List available personas |
+| POST | `/api/set-persona` | Switch active persona |
+| GET | `/api/sessions` | List recorded voice sessions |
 | GET | `/api/sessions/{id}/transcript` | Get session transcript |
-| GET | `/api/personas` | Get active persona |
-
-### MCP Tools (used by the voice agent)
-
-| Tool | Description |
-|------|-------------|
-| `query_knowledge_base` | Search RAG vector store |
-| `check_and_book_appointment` | Check calendar availability |
-| `schedule_appointment` | Book a Google Calendar appointment |
-| `get_appointment_info` | Get appointment configuration |
 
 ---
 
-## Maintenance
+## License
 
-### Update Frontend
-```bash
-cd frontend && npm install && npm run build
-```
-
-### Update Python Backend
-```bash
-pip install -r requirements.txt
-```
+MIT
