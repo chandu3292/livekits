@@ -242,15 +242,21 @@ class KnowledgeBase:
 
         # Sort by hybrid score, take top 3
         candidates.sort(key=lambda x: x[0], reverse=True)
+        rag_logger.info(f"[RAG] All candidates ({len(candidates)}):")
+        for rank, (score, idx) in enumerate(candidates[:5]):
+            meta = self.metadata[idx]
+            rag_logger.info(f"  #{rank+1} score={score:.4f} src={meta['source']} text={meta['text'][:200]}")
+
         llm_results = []
         for score, idx in candidates[:3]:
             meta = self.metadata[idx]
             llm_results.append(f"[{meta['source']}]: {meta['text']}")
-            rag_logger.info(f"  chunk idx={idx} hybrid_score={score:.4f}")
 
         total_time = (time.time() - start_time) * 1000
         result_text = "\n\n---\n\n".join(llm_results) if llm_results else "No specific information found."
         rag_logger.info(f"[RAG] DONE. Latency: {total_time:.2f}ms | Sent to LLM: {len(llm_results)}")
+        if llm_results:
+            rag_logger.info(f"[RAG] Context sent to LLM:\n{result_text[:500]}")
         return result_text
 
 

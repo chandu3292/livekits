@@ -83,42 +83,44 @@ def _process_image(file_bytes: bytes, lang: str) -> Dict[str, Any]:
 
 
 def _process_pdf(file_bytes: bytes, lang: str) -> Dict[str, Any]:
-    """Process PDF - first try text extraction, fallback to OCR for scanned pages."""
-    from pypdf import PdfReader
+    """Process PDF - use pymupdf for text extraction, fallback to OCR for scanned pages."""
+    import fitz  # pymupdf
 
     ocr = OCRExtractor(lang=lang)
     table_ext = TableExtractor(lang=lang)
 
-    reader = PdfReader(io.BytesIO(file_bytes))
+    doc = fitz.open(stream=file_bytes, filetype="pdf")
     all_text = []
     all_tables = []
     all_kv = {}
     ocr_pages = 0
+    num_pages = len(doc)
 
-    for page_num, page in enumerate(reader.pages):
-        # Try native text extraction first
-        page_text = page.extract_text() or ""
+    for page_num in range(num_pages):
+        page = doc[page_num]
+        page_text = page.get_text("text") or ""
 
         if len(page_text.strip()) < 50:
-            # Page likely scanned/image-based - use OCR
-            images = _extract_images_from_pdf_page(page)
-            if images:
-                ocr_pages += 1
-                for img in images:
-                    ocr_text = ocr.extract_text(img)
-                    page_text += "\n" + ocr_text
+            # Page likely scanned/image-based - render as image and OCR
+            ocr_pages += 1
+            pix = page.get_pixmap(dpi=200)
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
 
-                    # Extract tables from each image
-                    tables = table_ext.extract_tables(img)
-                    if tables:
-                        all_tables.extend(tables)
+            ocr_text = ocr.extract_text(img)
+            if ocr_text:
+                page_text += "\n" + ocr_text
 
-        # Extract key-value pairs from text
+            tables = table_ext.extract_tables(img)
+            if tables:
+                all_tables.extend(tables)
+
         kv = table_ext.extract_key_value_pairs(page_text)
         all_kv.update(kv)
 
         if page_text.strip():
             all_text.append(f"--- Page {page_num + 1} ---\n{page_text.strip()}")
+
+    doc.close()
 
     combined = "\n\n".join(all_text)
     if all_tables:
@@ -130,7 +132,7 @@ def _process_pdf(file_bytes: bytes, lang: str) -> Dict[str, Any]:
         "tables": all_tables,
         "key_value_pairs": all_kv,
         "file_type": "pdf",
-        "pages": len(reader.pages),
+        "pages": num_pages,
         "ocr_pages": ocr_pages,
     }
 
